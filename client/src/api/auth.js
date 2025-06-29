@@ -11,6 +11,7 @@ import {
   reauthenticateWithCredential,
   updatePassword,
   sendPasswordResetEmail,
+  signOut,
 } from "firebase/auth";
 
 const provider = new GoogleAuthProvider();
@@ -163,8 +164,7 @@ export const resetPassword = async (email) => {
 
 export const logout = async () => {
   try {
-    await auth.signOut();
-    localStorage.removeItem("token");
+    await signOut(auth);
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }

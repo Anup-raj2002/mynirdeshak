@@ -15,6 +15,8 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { UserProvider } from './contexts/UserContext';
+import ForgotPassword from './pages/ForgotPassword';
+import NotFound from './pages/NotFound';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -28,10 +30,10 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <NotificationProvider>
-      <UserProvider>
-        <QueryClientProvider client={queryClient}>
-          <Router>
+    <QueryClientProvider client={queryClient}>
+      <NotificationProvider>
+        <UserProvider>
+            <Router>
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
               <Header />
               <main className="pt-20">
@@ -43,17 +45,19 @@ function App() {
                   <Route path="/register" element={<Registration />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
               <Footer />
             </div>
           </Router>
           <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
-      </UserProvider>
-    </NotificationProvider>
+        </UserProvider>
+      </NotificationProvider>
+    </QueryClientProvider>
   );
 }
 
