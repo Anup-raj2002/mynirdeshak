@@ -20,7 +20,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use('/v1/testId/:id/webhook', express.raw({ type: 'application/json' }));
+app.use('/v1/tests/:testId/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware());

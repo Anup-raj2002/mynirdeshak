@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express';
+import { Response, Request, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError } from '../middleware/errorHandler';
 import { Test } from '../models/test.model';
@@ -11,8 +11,10 @@ import { Types } from 'mongoose';
 import { TestPayment } from '../models/payment.model';
 import { CashFree } from '../config/cashfree.config';
 import { config } from '../config/variables.config';
+import { auth } from '../config/firebase.config';
 import { v4 as uuid } from 'uuid';
 import { sendMail } from '../services/mail.service';
+import { testAttemptValidationSchema } from '../schemas/testAttempt.validator'
 
 export const getTest = async (
   req: AuthRequest,
@@ -40,8 +42,9 @@ export const createTest = async (
 ) => {
   try {
     const validatedData = await testValidationSchema.parseAsync(req.body);
-    const id = User.findOne({uid:req.user?.uid}).select('_id').lean();
-    const test = await Test.create({instructorId: id, ...validatedData});
+    const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
+    if(!mUser) throw new AuthenticationError();
+    const test = await Test.create({instructorId: mUser._id, ...validatedData});
     res.status(201).json(cleanMongoData(test.toJSON()));
   } catch (error) {
     next(error);
@@ -57,8 +60,9 @@ export const deleteTest = async (
     const testId = req.params.testId;
     const test = await Test.findById(testId).lean();
     if (!test) throw new NotFoundError('Test not found');
-    const id = User.findOne({uid:req.user?.uid}).select('_id').lean();
-    if (req.user?.role === 'instructor' && !test.instructorId.equals(id)) {
+    const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
+    if(!mUser) throw new AuthenticationError();
+    if (req.user?.role === 'instructor' && !test.instructorId.equals(mUser.id)) {
       throw new AuthorizationError('You do not have permission to delete this test');
     }
     await Question.deleteMany({ _id: { $in: test.questions } });
@@ -138,7 +142,7 @@ export const submitTestAttempt = async (
     }).filter(Boolean);
     const totalPoints = test.questions.reduce((acc: any, q: any) => acc + (q as any).points, 0);
     const percentageScore = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
-    let attempt = await TestAttempt.findOne({ testId, userId: mUser._id });
+    let attempt = await TestAttempt.findOne({ testId: testId, userId: mUser._id });
     if (!attempt) {
       attempt = new TestAttempt({
         testId,
@@ -257,8 +261,9 @@ export const updateTest = async (
     if (!test) {
       throw new NotFoundError('Test not found');
     }
-    const id = User.findOne({uid:req.user?.uid}).select('_id').lean();
-    if (req.user?.role === 'instructor' && !test.instructorId.equals(id)) {
+    const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
+    if(!mUser) throw new AuthenticationError();
+    if (req.user?.role === 'instructor' && !test.instructorId.equals(mUser.id)) {
       throw new AuthorizationError('You cannot modify tests owned by other instructors');
     }
     if (updateData.name !== undefined) test.name = updateData.name;
@@ -330,16 +335,13 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response, next: Ne
 export const getTestRankings = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { testId } = req.params;
-    // 1. Get all attempts for the test
     const attempts = await TestAttempt.find({ testId, completedAt: { $ne: null } })
-      .populate('userId', 'name email school')
+      .populate('userId', 'name uid')
       .lean();
-    // 2. Sort by score desc, completedAt asc
     attempts.sort((a: any, b: any) => {
       if (b.score !== a.score) return b.score - a.score;
       return new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime();
     });
-    // 3. Assign ranks (ties allowed)
     let currentRank = 1;
     let lastScore = null;
     let lastTime = null;
@@ -356,20 +358,18 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
         lastTime = att.completedAt?.toISOString();
         sameRankCount = 1;
       }
-      // 4. Update rank in DB if changed
-      if (att.rank !== att.rankInDb) {
-        TestAttempt.updateOne({ _id: att._id }, { $set: { rank: att.rank } }).exec();
-      }
-      // 5. Send email if user has email
-      if (att.userId && att.userId.email) {
-        sendMail({
-          to: att.userId.email,
-          subject: `Your Rank for Test ${testId}`,
-          text: `Hi ${att.userId.name || ''},\n\nYour rank for the test is ${att.rank}. Your score: ${att.score}.\n\nThank you for participating!`,
-        });
+     
+      if (att.userId && (att.userId as any).uid) {
+        const firebaseUser = await auth.getUser((att.userId as any).uid);
+        if (firebaseUser.email) {
+          sendMail({
+            to: firebaseUser.email,
+            subject: `Your Rank for Test ${testId}`,
+            text: `Hi ${firebaseUser.displayName || ''},\n\nYour rank for the test is ${att.rank}. Your score: ${att.score}.\n\nThank you for participating!`,
+          });
+        }
       }
     }
-    // 6. Return ranking list
     const ranking = attempts.map((att: any) => ({
       user: att.userId,
       score: att.score,
@@ -459,9 +459,9 @@ export const PaymentHook = async (req: Request, res: Response) => {
     const testId = (req as any).params.testId;
     if (!testId) throw new ConflictError('Missing test ID');
     if (!CashFree.PGVerifyWebhookSignature(
-      req.headers.get('x-webhook-signature') as string,
+      req.headers['x-webhook-signature'] as string,
       (req as any).body,
-      req.headers.get('x-webhook-timestamp') as string
+      req.headers['x-webhook-timestamp'] as string
     )) {
       res.status(200).send('Invalid webhook signature');
       return;
@@ -497,4 +497,23 @@ export const PaymentHook = async (req: Request, res: Response) => {
   } catch (err) {
     res.status(200).send('Error processing webhook');
   }
-}; 
+};
+
+export const getPublicTest = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { testId } = req.params;
+    const test = await Test.findById(testId).lean();
+    if (!test) {
+      return next(new NotFoundError('Test not found'));
+    }
+    // Omit questions from the response
+    const { questions, ...publicTest } = cleanMongoData(test);
+    res.status(200).json(publicTest);
+  } catch (error) {
+    next(error);
+  }
+};

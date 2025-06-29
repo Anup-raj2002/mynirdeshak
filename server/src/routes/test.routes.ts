@@ -15,11 +15,15 @@ import {
   createOrder,
   orderComplete,
   PaymentHook,
+  getPublicTest,
 } from '../controllers/test.controller';
 
 const testRouter = Router();
 
 testRouter.post('/:testId/webhook', PaymentHook);
+
+// Public test details (no questions)
+testRouter.get('/public/:testId', getPublicTest);
 
 testRouter.use(authenticate);
 

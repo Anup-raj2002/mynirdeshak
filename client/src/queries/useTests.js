@@ -1,0 +1,162 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as testApi from '../api/tests';
+
+// Query Keys
+export const testKeys = {
+  all: ['tests'],
+  lists: () => [...testKeys.all, 'list'],
+  list: (filters) => [...testKeys.lists(), filters],
+  details: () => [...testKeys.all, 'detail'],
+  detail: (id) => [...testKeys.details(), id],
+  rankings: (id) => [...testKeys.detail(id), 'rankings'],
+  results: (id) => [...testKeys.detail(id), 'results'],
+};
+
+// Test Management Queries
+export const useTest = (testId, options = {}) => {
+  return useQuery({
+    queryKey: testKeys.detail(testId),
+    queryFn: () => testApi.getTest(testId),
+    enabled: !!testId,
+    ...options,
+  });
+};
+
+export const useCreateTest = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: testApi.createTest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: testKeys.lists() });
+    },
+  });
+};
+
+export const useUpdateTest = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ testId, updateData }) => testApi.updateTest(testId, updateData),
+    onSuccess: (data, { testId }) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+      queryClient.invalidateQueries({ queryKey: testKeys.lists() });
+    },
+  });
+};
+
+export const useDeleteTest = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: testApi.deleteTest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: testKeys.lists() });
+    },
+  });
+};
+
+// Question Management Mutations
+export const useAddQuestionToTest = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ testId, questionData }) => testApi.addQuestionToTest(testId, questionData),
+    onSuccess: (data, { testId }) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+    },
+  });
+};
+
+export const useDeleteQuestionFromTest = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ testId, questionId }) => testApi.deleteQuestionFromTest(testId, questionId),
+    onSuccess: (data, { testId }) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+    },
+  });
+};
+
+// Test Attempt Queries and Mutations
+export const useStartTestAttempt = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: testApi.startTestAttempt,
+    onSuccess: (data, testId) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+    },
+  });
+};
+
+export const useSubmitTestAttempt = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ testId, answers }) => testApi.submitTestAttempt(testId, answers),
+    onSuccess: (data, { testId }) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.results(testId) });
+      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+    },
+  });
+};
+
+export const useTestResult = (testId, options = {}) => {
+  return useQuery({
+    queryKey: testKeys.results(testId),
+    queryFn: () => testApi.getTestResult(testId),
+    enabled: !!testId,
+    ...options,
+  });
+};
+
+// Payment Mutations
+export const useCreateOrder = () => {
+  return useMutation({
+    mutationFn: testApi.createOrder,
+  });
+};
+
+export const useOrderComplete = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ testId, orderId }) => testApi.orderComplete(testId, orderId),
+    onSuccess: (data, { testId }) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+    },
+  });
+};
+
+// Admin/Management Queries and Mutations
+export const useGrantTestToStudent = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ testId, userId, amount, method }) => 
+      testApi.grantTestToStudent(testId, userId, amount, method),
+    onSuccess: (data, { testId }) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+    },
+  });
+};
+
+export const useTestRankings = (testId, options = {}) => {
+  return useQuery({
+    queryKey: testKeys.rankings(testId),
+    queryFn: () => testApi.getTestRankings(testId),
+    enabled: !!testId,
+    ...options,
+  });
+};
+
+export const usePublicTest = (testId, options = {}) => {
+  return useQuery({
+    queryKey: ['publicTest', testId],
+    queryFn: () => testApi.getPublicTest(testId),
+    enabled: !!testId,
+    ...options,
+  });
+}; 
