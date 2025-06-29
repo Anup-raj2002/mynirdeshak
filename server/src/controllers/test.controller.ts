@@ -121,7 +121,7 @@ export const submitTestAttempt = async (
     const validatedData = await testAttemptValidationSchema.parseAsync(req.body);
     const test = await Test.findById(testId).populate('questions').lean();
     if (!test) return next(new NotFoundError('Test not found'));
-    // Check if test is within allowed time window
+    
     const now = new Date();
     if (now < test.startDateTime || now > test.endDateTime) {
       return next(new AuthorizationError('Test is not available at this time.'));
@@ -179,7 +179,7 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
     const userId = mUser._id;
     const test = await Test.findOne({ _id: testId, isPublished: true }).populate('questions', '-correctAnswer').lean();
     if (!test) throw new NotFoundError('Test not found');
-    // Check if test is within allowed time window
+    
     const now = new Date();
     if (now < test.startDateTime || now > test.endDateTime) {
       return next(new AuthorizationError('Test is not available at this time.'));
@@ -194,7 +194,7 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
     } else if (attempt.completedAt) {
       return next(new AuthorizationError('You have already completed this test.'));
     }
-    // Randomize questions and options
+    
     const shuffledQuestions = [...test.questions].sort(() => Math.random() - 0.5).map((q: any) => ({
       ...q,
       options: [...q.options].sort(() => Math.random() - 0.5),
@@ -271,6 +271,7 @@ export const updateTest = async (
     if (updateData.isPublished !== undefined) test.isPublished = updateData.isPublished;
     if (updateData.startDateTime !== undefined) test.startDateTime = updateData.startDateTime;
     if (updateData.endDateTime !== undefined) test.endDateTime = updateData.endDateTime;
+    if (updateData.registrationEndDateTime !== undefined) test.registrationEndDateTime = updateData.registrationEndDateTime;
     if(updateData.price !== undefined) test.price = updateData.price;
     await test.save();
     res.json(cleanMongoData(test.toJSON()));
@@ -279,18 +280,18 @@ export const updateTest = async (
   }
 };
 
-// Placeholders for analytics, ranking, and grant logic
+
 export const getTestAnalytics = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { testId } = req.params;
-    // Total students registered for the test
+    
     const totalStudents = await TestPayment.countDocuments({ testId });
-    // Total sales (sum of amount, only ONLINE method)
+    
     const totalSales = await TestPayment.aggregate([
       { $match: { testId: new Types.ObjectId(testId), method: 'ONLINE' } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
-    // Group by week
+    
     const byWeek = await TestPayment.aggregate([
       { $match: { testId: new Types.ObjectId(testId) } },
       { $group: {
@@ -300,7 +301,7 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response, next: Ne
       } },
       { $sort: { '_id': 1 } }
     ]);
-    // Group by year
+    
     const byYear = await TestPayment.aggregate([
       { $match: { testId: new Types.ObjectId(testId) } },
       { $group: {
@@ -310,7 +311,7 @@ export const getTestAnalytics = async (req: AuthRequest, res: Response, next: Ne
       } },
       { $sort: { '_id': 1 } }
     ]);
-    // Group by quarter
+    
     const byQuarter = await TestPayment.aggregate([
       { $match: { testId: new Types.ObjectId(testId) } },
       { $group: {
@@ -499,8 +500,8 @@ export const PaymentHook = async (req: Request, res: Response) => {
   }
 };
 
-export const getPublicTest = async (
-  req: AuthRequest,
+export const getPublicTestById = async (
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => {
@@ -510,9 +511,25 @@ export const getPublicTest = async (
     if (!test) {
       return next(new NotFoundError('Test not found'));
     }
-    // Omit questions from the response
     const { questions, ...publicTest } = cleanMongoData(test);
     res.status(200).json(publicTest);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPublicTest = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const now = new Date();
+    const tests = await Test.find(
+      { isPublished: true, endDateTime: { $gt: now } },
+      { questions: 0 }
+    ).lean();
+    res.status(200).json(cleanMongoData(tests));
   } catch (error) {
     next(error);
   }

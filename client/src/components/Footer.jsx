@@ -1,6 +1,4 @@
 import React from 'react';
-// Link is not used, so it can be removed if not used elsewhere in the actual app
-// import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GraduationCap, Mail, Phone, MapPin, Facebook, Instagram, Linkedin, ArrowRight } from 'lucide-react';
 
@@ -28,7 +26,6 @@ const Footer = () => {
     ]
   };
 
-  // Removed Twitter from socialLinks
   const socialLinks = [
     { icon: Facebook, href: '#', label: 'Facebook', color: 'hover:bg-blue-600' },
     { icon: Instagram, href: '#', label: 'Instagram', color: 'hover:bg-pink-600' },
@@ -61,7 +58,6 @@ const Footer = () => {
               viewport={{ once: true }}
               className="lg:col-span-1"
             >
-              {/* Using a regular div since Link and router-dom are not provided in this context */}
               <div className="flex items-center space-x-3 mb-6 group">
                 <motion.div
                   whileHover={{ rotate: 360 }}
@@ -128,7 +124,6 @@ const Footer = () => {
                       transition={{ delay: (categoryIndex * 0.1) + (linkIndex * 0.05), duration: 0.6 }}
                       viewport={{ once: true }}
                     >
-                      {/* Using a regular anchor tag since Link and router-dom are not provided in this context */}
                       <a
                         href={link.path}
                         className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center group"
@@ -143,38 +138,6 @@ const Footer = () => {
             ))}
           </div>
         </div>
-
-        {/* Newsletter Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="border-t border-gray-700 py-8"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-2xl font-semibold mb-2">Stay Updated</h3>
-              <p className="text-gray-300">
-                Subscribe to get updates about new scholarships, exam notifications, and educational opportunities.
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400 transition-all duration-200"
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                Subscribe
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
 
         {/* Bottom Footer */}
         <div className="border-t border-gray-700 py-6">

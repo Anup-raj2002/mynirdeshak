@@ -15,11 +15,6 @@ import { config } from '../config/variables.config';
 import { User } from '../models/user.model';
 import { createStudentValidationSchema, createUserValidationSchema, CreateUserInput, UserRoles, deleteStudentValidationSchema, DeleteStudent } from '../schemas/user.validator';
 import { baseUserValidationSchema } from '../schemas/user.validator';
-import { sendMail } from '../services/mail.service';
-
-const generateRandomString = (length: number) => {
-  return Math.random().toString(36).substring(2, 2 + length).padEnd(length, 'z');
-};
 
 export const newStudent = async (
   req: AuthRequest,
@@ -227,7 +222,7 @@ export const getAllUsers = async (
       return matchesEmail && matchesRole;
     });
 
-    // Pagination logic
+    
     const total = filteredFirebaseUsers.length;
     const startIndex = (pageNumber - 1) * pageSize;
     const endIndex = Math.min(startIndex + pageSize, total);
@@ -300,126 +295,3 @@ export const deleteUser = async (
     return next(error);
   }
 };
-
-// export const createUsers = async (
-//   req: AuthRequest,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//     try {
-//       const rawUsersData = req.body;
-  
-//       if (!Array.isArray(rawUsersData) || rawUsersData.length === 0) {
-//         throw new AppError('Invalid input: Expected an array of users.', 400, true);
-//       }
-  
-//       const results = [];
-//       const domainUrl = process.env.DOMAIN_URL || "http://localhost:3000";
-  
-//       for (const userDataFromExcel of rawUsersData) {
-//         let firebaseUid = null;
-//         let generatedEmail = null;
-//         let generatedPassword = null;
-//         const providedName = userDataFromExcel.Name || 'Unknown User';
-//         const providedEmail = userDataFromExcel.Email;
-//         const providedPassword = userDataFromExcel.Password;
-//         const providedRole = userDataFromExcel.Role;
-//         const providedContactNumber = userDataFromExcel.ContactNumber ? String(userDataFromExcel.ContactNumber) : undefined;
-//         const providedSchool = userDataFromExcel.School;
-  
-//         try {
-//           if (!providedName) {
-//             throw new AppError('User "Name" is missing in Excel row.', 400, true);
-//           }
-//           if (!providedRole || !UserRoles.includes(providedRole.toLowerCase())) {
-//             throw new AppError(`Invalid or missing "Role" for user ${providedName}. Allowed roles: ${UserRoles.join(', ')}.`, 400, true);
-//           }
-//           const role = providedRole.toLowerCase();
-  
-//           if (!providedEmail) {
-//             const initials = providedName.split(' ').map((n: string) => n[0]).join('').toLowerCase();
-//             const uniquePart = generateRandomString(4);
-//             let accessId = `${initials.substring(0, 2)}${uniquePart}`;
-//             generatedEmail = `${accessId}learnocept.in`;
-//           }
-  
-//           if (!providedPassword) {
-//             const base = providedName.substring(0, Math.min(providedName.length, 3)).toLowerCase();
-//             generatedPassword = `${base}${generateRandomString(Math.max(0, 6 - base.length))}`;
-//           } else {
-//             generatedPassword = String(providedPassword);
-//             if (generatedPassword.length < 6) {
-//                 throw new Error('Provided password must be at least 6 characters long.');
-//             }
-//           }
-//           const userPayload = {
-//             name: providedName,
-//             email: generatedEmail,
-//             password: generatedPassword,
-//             contactNumber: providedContactNumber,
-//             role: role,
-//             school: providedSchool,
-//           };
-  
-//           let validationResult;
-//           if (role === 'student') {
-//             validationResult = await createStudentValidationSchema.parseAsync(userPayload);
-//           } else {
-//             validationResult = await createUserValidationSchema.parseAsync(userPayload);
-//           }
-  
-//           const userRecord = await auth.createUser({
-//             email: validationResult.email,
-//             password: validationResult.password,
-//             emailVerified: true,
-//           });
-//           firebaseUid = userRecord.uid;
-
-//           let userDocData = {
-//             uid: userRecord.uid,
-//             name: providedName,
-//             role: role,
-//             contactNumber: providedContactNumber,
-//           };
-  
-//           if (role === 'student') {
-//             Object.assign(userDocData, {
-//               school: providedSchool
-//             });
-//           }
-  
-//           const newUser = new User(userDocData);
-//           await newUser.save();
-  
-//           results.push({
-//             status: 'success',
-//             name: providedName,
-//             role: role,
-//           });
-          
-//           let message = `Welcome ${role}, your access ID is ${generatedEmail} and password ${generatedPassword}. Please access it here ${domainUrl}`;
-//           console.log(message);
-//         } catch (error) {
-//           if (firebaseUid) {
-//             try {
-//               await auth.deleteUser(firebaseUid);
-//               console.warn(`Rolled back Firebase user ${firebaseUid} due to subsequent error.`);
-//             } catch (firebaseError: any) {
-//               console.error(`Failed to rollback Firebase user ${firebaseUid}:`, firebaseError.message);
-//             }
-//           }
-//           console.error(`Error processing user ${providedEmail || providedName}:`, error.message);
-//           results.push({
-//             status: 'error',
-//             name: providedName,
-//             error: error.message,
-//           });
-//         }
-//       }
-  
-//       res.status(200).json({ message: 'Bulk user processing complete', results });
-  
-//     } catch (error) {
-//       next(error);
-//     }
-//   };

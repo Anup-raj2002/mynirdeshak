@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as testApi from '../api/tests';
 
-// Query Keys
+
 export const testKeys = {
   all: ['tests'],
   lists: () => [...testKeys.all, 'list'],
@@ -12,7 +12,7 @@ export const testKeys = {
   results: (id) => [...testKeys.detail(id), 'results'],
 };
 
-// Test Management Queries
+
 export const useTest = (testId, options = {}) => {
   return useQuery({
     queryKey: testKeys.detail(testId),
@@ -56,7 +56,7 @@ export const useDeleteTest = () => {
   });
 };
 
-// Question Management Mutations
+
 export const useAddQuestionToTest = () => {
   const queryClient = useQueryClient();
   
@@ -79,7 +79,7 @@ export const useDeleteQuestionFromTest = () => {
   });
 };
 
-// Test Attempt Queries and Mutations
+
 export const useStartTestAttempt = () => {
   const queryClient = useQueryClient();
   
@@ -112,7 +112,7 @@ export const useTestResult = (testId, options = {}) => {
   });
 };
 
-// Payment Mutations
+
 export const useCreateOrder = () => {
   return useMutation({
     mutationFn: testApi.createOrder,
@@ -130,7 +130,7 @@ export const useOrderComplete = () => {
   });
 };
 
-// Admin/Management Queries and Mutations
+
 export const useGrantTestToStudent = () => {
   const queryClient = useQueryClient();
   
@@ -152,11 +152,19 @@ export const useTestRankings = (testId, options = {}) => {
   });
 };
 
-export const usePublicTest = (testId, options = {}) => {
+export const usePublicTestById = (testId, options = {}) => {
   return useQuery({
     queryKey: ['publicTest', testId],
-    queryFn: () => testApi.getPublicTest(testId),
+    queryFn: () => testApi.getPublicTestById(testId),
     enabled: !!testId,
+    ...options,
+  });
+};
+
+export const usePublicTests = (options = {}) => {
+  return useQuery({
+    queryKey: ['publicTests'],
+    queryFn: () => testApi.getPublicTest(),
     ...options,
   });
 }; 

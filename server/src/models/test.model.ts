@@ -9,6 +9,7 @@ export interface ITest extends Document {
   startDateTime: Date;
   endDateTime: Date;
   registration: number;
+  registrationEndDateTime: Date;
   price: number;
 }
 
@@ -25,6 +26,7 @@ export const testSchema = new Schema<ITest>({
   startDateTime: { type: Date, required: true },
   endDateTime: { type: Date, required: true },
   registration: { type: Number, required: false },
+  registrationEndDateTime: { type: Date, required: true },
   price: { type: Number, required: true },
 }, {
   timestamps: true,

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as authApi from '../api/auth';
 
-// Query Keys
+
 export const authKeys = {
   all: ['auth'],
   profile: () => [...authKeys.all, 'profile'],
@@ -9,7 +9,7 @@ export const authKeys = {
   usersList: (filters) => [...authKeys.users(), filters],
 };
 
-// Profile Queries
+
 export const useUserProfile = (options = {}) => {
   return useQuery({
     queryKey: authKeys.profile(),
@@ -41,7 +41,7 @@ export const useUpdateProfileWithPhoto = () => {
   });
 };
 
-// User Management Queries (Admin/Test Manager only)
+
 export const useAllUsers = (filters = {}, options = {}) => {
   return useQuery({
     queryKey: authKeys.usersList(filters),

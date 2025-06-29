@@ -1,6 +1,6 @@
 import axiosInstance from './axiosInstance';
 
-// Test Management APIs
+
 export const createTest = async (testData) => {
   const response = await axiosInstance.post('/tests', testData);
   return response.data;
@@ -21,7 +21,7 @@ export const deleteTest = async (testId) => {
   return response.data;
 };
 
-// Question Management APIs
+
 export const addQuestionToTest = async (testId, questionData) => {
   const response = await axiosInstance.post(`/tests/${testId}/questions`, questionData);
   return response.data;
@@ -32,7 +32,7 @@ export const deleteQuestionFromTest = async (testId, questionId) => {
   return response.data;
 };
 
-// Test Attempt APIs
+
 export const startTestAttempt = async (testId) => {
   const response = await axiosInstance.post(`/tests/${testId}/attempt/start`);
   return response.data;
@@ -48,7 +48,7 @@ export const getTestResult = async (testId) => {
   return response.data;
 };
 
-// Payment APIs
+
 export const createOrder = async (testId) => {
   const response = await axiosInstance.post(`/tests/${testId}/order`);
   return response.data;
@@ -59,7 +59,7 @@ export const orderComplete = async (testId, orderId) => {
   return response.data;
 };
 
-// Admin/Management APIs
+
 export const grantTestToStudent = async (testId, userId, amount = 0, method = 'GRANT') => {
   const response = await axiosInstance.post(`/tests/${testId}/grant`, {
     userId,
@@ -74,7 +74,12 @@ export const getTestRankings = async (testId) => {
   return response.data;
 };
 
-export const getPublicTest = async (testId) => {
+export const getPublicTestById = async (testId) => {
   const response = await axiosInstance.get(`/tests/public/${testId}`);
+  return response.data;
+};
+
+export const getPublicTest = async () => {
+  const response = await axiosInstance.get(`/tests/public`);
   return response.data;
 }; 

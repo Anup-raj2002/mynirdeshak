@@ -17,6 +17,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { UserProvider } from './contexts/UserContext';
 import ForgotPassword from './pages/ForgotPassword';
 import NotFound from './pages/NotFound';
+import UpcomingTests from './pages/UpcomingTest';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -43,11 +44,16 @@ function App() {
                   <Route path="/how-it-works" element={<HowItWorks />} />
                   <Route path="/scholarships" element={<Scholarships />} />
                   <Route path="/register" element={<Registration />} />
+                  <Route path="/exams" element={<UpcomingTests />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/terms" element={<NotFound />} />
+                  <Route path="/privacy" element={<NotFound />} />
+                  <Route path="/refund" element={<NotFound />} />
+                  <Route path="/disclaimer" element={<NotFound />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

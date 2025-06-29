@@ -14,6 +14,7 @@ export const testValidationSchema = z.object({
   questions: z.string().optional(),
   startDateTime: z.preprocess((val) => (typeof val === 'string' ? new Date(val) : val), z.date()),
   endDateTime: z.preprocess((val) => (typeof val === 'string' ? new Date(val) : val), z.date()),
+  registrationEndDateTime: z.preprocess((val) => (typeof val === 'string' ? new Date(val) : val), z.date()),
 });
 
 export type TestInput = z.infer<typeof testValidationSchema>; 
