@@ -1,7 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -19,51 +17,48 @@ import ForgotPassword from './pages/ForgotPassword';
 import NotFound from './pages/NotFound';
 import UpcomingTests from './pages/UpcomingTest';
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <Router>
       <NotificationProvider>
         <UserProvider>
-            <Router>
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-              <Header />
-              <main className="pt-20">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/how-it-works" element={<HowItWorks />} />
-                  <Route path="/scholarships" element={<Scholarships />} />
-                  <Route path="/register" element={<Registration />} />
-                  <Route path="/exams" element={<UpcomingTests />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/terms" element={<NotFound />} />
-                  <Route path="/privacy" element={<NotFound />} />
-                  <Route path="/refund" element={<NotFound />} />
-                  <Route path="/disclaimer" element={<NotFound />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-          </Router>
-          <ReactQueryDevtools initialIsOpen={false} />
+          <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+            <Header />
+            <ScrollToTop />
+            <main className="pt-20">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/scholarships" element={<Scholarships />} />
+                <Route path="/register" element={<Registration />} />
+                <Route path="/exams" element={<UpcomingTests />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                {/* <Route path="order-success/:testId" element={<OrderComplete />} /> */}
+                <Route path="/terms" element={<NotFound />} />
+                <Route path="/privacy" element={<NotFound />} />
+                <Route path="/refund" element={<NotFound />} />
+                <Route path="/disclaimer" element={<NotFound />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
         </UserProvider>
       </NotificationProvider>
-    </QueryClientProvider>
+    </Router>
   );
 }
 

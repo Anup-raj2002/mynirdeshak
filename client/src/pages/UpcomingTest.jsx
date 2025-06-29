@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePublicTest } from "../queries/useTests";
-import { useCreateOrder } from "../queries/useTests";
 import { useUser } from "../contexts/UserContext";
 import { useNotification } from "../contexts/NotificationContext";
 import { load } from "@cashfreepayments/cashfree-js";
-import { Clock, Calendar, Users, ShoppingCart, Info } from "lucide-react";
+import TestCard from "../components/TestCard";
+import NoUpcomingTests from "../components/NoUpcomingTests";
+import Loading from "../components/Loading";
 
+// Utility to format duration between two dates
 function formatDuration(start, end) {
   const diff = (new Date(end) - new Date(start)) / 1000;
   const hours = Math.floor(diff / 3600);
@@ -14,6 +15,7 @@ function formatDuration(start, end) {
   return `${hours ? hours + "h " : ""}${minutes}m`;
 }
 
+// Utility to format countdown to a target date
 function formatCountdown(target) {
   const now = new Date();
   const end = new Date(target);
@@ -25,156 +27,150 @@ function formatCountdown(target) {
   return `${hours}h ${minutes}m ${seconds}s`;
 }
 
+// Temporary test data for development/demo
+const TEMP_TESTS = [
+  {
+    _id: "1",
+    name: "Math Olympiad",
+    price: 299,
+    startDateTime: new Date(Date.now() + 2 * 3600 * 1000).toISOString(),
+    endDateTime: new Date(Date.now() + 4 * 3600 * 1000).toISOString(),
+    registrationEndDateTime: new Date(Date.now() + 90 * 60 * 1000).toISOString(),
+    registration: 42,
+    isPublished: true,
+    description: "A challenging math competition for all levels.",
+  },
+  {
+    _id: "2",
+    name: "Physics Challenge",
+    price: 199,
+    startDateTime: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+    endDateTime: new Date(Date.now() + 26 * 3600 * 1000).toISOString(),
+    registrationEndDateTime: new Date(Date.now() + 23 * 3600 * 1000).toISOString(),
+    registration: 18,
+    isPublished: true,
+    description: "Test your physics knowledge and win prizes!",
+  },
+  {
+    _id: "3",
+    name: "Chemistry Quiz",
+    price: 149,
+    startDateTime: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
+    endDateTime: new Date(Date.now() + 50 * 3600 * 1000).toISOString(),
+    registrationEndDateTime: new Date(Date.now() + 47 * 3600 * 1000).toISOString(),
+    registration: 25,
+    isPublished: true,
+    description: "Compete in our chemistry quiz and show your skills!",
+  },
+  {
+    _id: "4",
+    name: "Biology Bowl",
+    price: 179,
+    startDateTime: new Date(Date.now() + 72 * 3600 * 1000).toISOString(),
+    endDateTime: new Date(Date.now() + 74 * 3600 * 1000).toISOString(),
+    registrationEndDateTime: new Date(Date.now() + 71 * 3600 * 1000).toISOString(),
+    registration: 30,
+    isPublished: true,
+    description: "Join the Biology Bowl and test your knowledge of life sciences.",
+  },
+  {
+    _id: "5",
+    name: "English Literature Test",
+    price: 129,
+    startDateTime: new Date(Date.now() + 96 * 3600 * 1000).toISOString(),
+    endDateTime: new Date(Date.now() + 98 * 3600 * 1000).toISOString(),
+    registrationEndDateTime: new Date(Date.now() + 95 * 3600 * 1000).toISOString(),
+    registration: 15,
+    isPublished: true,
+    description: "Show off your English literature expertise in this fun test!",
+  },
+  {
+    _id: "6",
+    name: "General Knowledge Marathon",
+    price: 99,
+    startDateTime: new Date(Date.now() + 120 * 3600 * 1000).toISOString(),
+    endDateTime: new Date(Date.now() + 122 * 3600 * 1000).toISOString(),
+    registrationEndDateTime: new Date(Date.now() + 119 * 3600 * 1000).toISOString(),
+    registration: 50,
+    isPublished: true,
+    description: "A marathon of questions from all subjects. Are you up for the challenge?",
+  },
+];
+
 const UpcomingTests = () => {
-  
-  const testId = "YOUR_TEST_ID"; 
-  const { data: test, isLoading } = usePublicTest(testId);
-  const { user, isLoading: userLoading } = useUser();
+  const [tests] = useState(TEMP_TESTS);
+  const [isLoading] = useState(false);
+  const { user } = useUser();
   const { showNotification } = useNotification();
-  const createOrder = useCreateOrder();
   const navigate = useNavigate();
-  const [modalOpen, setModalOpen] = useState(false);
   const [cashfree, setCashfree] = useState(null);
-  const [countdown, setCountdown] = useState("");
+  const [countdowns, setCountdowns] = useState({});
 
-  
-  useEffect(() => {
-    if (!test?.registrationEndDateTime) return;
-    const interval = setInterval(() => {
-      setCountdown(formatCountdown(test.registrationEndDateTime));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [test]);
-
-  
   useEffect(() => {
     load({ mode: import.meta.env.DEV ? "sandbox" : "production" }).then(setCashfree);
   }, []);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (!test) return <div>No upcoming tests found.</div>;
+  useEffect(() => {
+    if (!Array.isArray(tests)) return;
+    const updateCountdowns = () => {
+      const newCountdowns = {};
+      tests.forEach((test) => {
+        newCountdowns[test._id] = formatCountdown(test.registrationEndDateTime);
+      });
+      setCountdowns(newCountdowns);
+    };
+    updateCountdowns();
+    const interval = setInterval(updateCountdowns, 1000);
+    return () => clearInterval(interval);
+  }, [tests]);
 
-  const handleRegister = async () => {
-    if (!user) {
-      localStorage.setItem("postLoginRedirect", location.pathname);
-      navigate("/signup");
-      return;
-    }
-    if (["admin", "course-manager", "instructor"].includes(user.role)) {
-      showNotification("Registration is only for students.", "info");
-      return;
-    }
-    if (!user.emailVerified) {
-      showNotification("Please verify your email before registering.", "warning");
-      return;
-    }
-    try {
-      const orderRes = await createOrder.mutateAsync(test._id);
-      const paymentSessionId = orderRes.payment_session_id;
-      if (!cashfree) throw new Error("Payment gateway not loaded");
-      await cashfree.checkout({ paymentSessionId, redirectTarget: "_self" });
-    } catch (err) {
-      showNotification(err.message || "Failed to start payment", "error");
-    }
+  const isRegisterDisabled = (test) => {
+    const now = new Date();
+    const isClosed = new Date(test.registrationEndDateTime) < now;
+    const isStaff = user && ["admin", "test-manager", "instructor"].includes(user.role);
+    return isClosed || isStaff;
   };
 
-  const isRegisterDisabled =
-    !user ||
-    ["admin", "course-manager", "instructor"].includes(user?.role) ||
-    !test ||
-    new Date(test.registrationEndDateTime) < new Date();
+  // Registration handler for the Register button
+  const handleRegister = useCallback(
+    (test) => {
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+      if (["admin", "test-manager", "instructor"].includes(user.role)) {
+        showNotification("Registration is only for students.", "info");
+        return;
+      }
+      if (!user.emailVerified) {
+        showNotification("Please verify your email before registering.", "warning");
+        return;
+      }
+      showNotification("Registration flow is disabled in demo mode.", "info");
+    },
+    [user, showNotification, navigate]
+  );
+
+  if (isLoading) return <Loading />;
+  if (!Array.isArray(tests) || tests.length === 0) return <NoUpcomingTests />;
 
   return (
     <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">{test.name}</h2>
-            <span className="text-lg font-semibold text-blue-600">₹{test.price}</span>
-          </div>
-          <div className="flex flex-wrap gap-4 text-gray-600">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-5 h-5" />
-              {new Date(test.startDateTime).toLocaleString()}
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-5 h-5" />
-              Duration: {formatDuration(test.startDateTime, test.endDateTime)}
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="w-5 h-5" />
-              {test.registration || 0} Registered
-            </div>
-            <div className="flex items-center gap-1">
-              <Info className="w-5 h-5" />
-              Registration closes in: <span className="font-semibold">{countdown}</span>
-            </div>
-          </div>
-          <button
-            className={`mt-4 w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 ${
-              isRegisterDisabled
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
-            onClick={() => setModalOpen(true)}
-            disabled={isRegisterDisabled}
-          >
-            View Details
-          </button>
-        </div>
+      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {tests.map((test) => (
+          <TestCard
+            key={test._id}
+            test={{
+              ...test,
+              duration: formatDuration(test.startDateTime, test.endDateTime),
+            }}
+            isRegisterDisabled={isRegisterDisabled(test)}
+            countdown={countdowns[test._id]}
+            description={test.description}
+            onRegister={() => handleRegister(test)}
+          />
+        ))}
       </div>
-
-      {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-xl shadow-lg p-8 max-w-lg w-full relative">
-            <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-              onClick={() => setModalOpen(false)}
-            >
-              ×
-            </button>
-            <h2 className="text-2xl font-bold mb-2">{test.name}</h2>
-            <p className="mb-4 text-gray-700">{test.description}</p>
-            <div className="mb-4 space-y-2">
-              <div>
-                <b>Start:</b> {new Date(test.startDateTime).toLocaleString()}
-              </div>
-              <div>
-                <b>End:</b> {new Date(test.endDateTime).toLocaleString()}
-              </div>
-              <div>
-                <b>Registration closes:</b> {new Date(test.registrationEndDateTime).toLocaleString()}
-              </div>
-              <div>
-                <b>Duration:</b> {formatDuration(test.startDateTime, test.endDateTime)}
-              </div>
-              <div>
-                <b>Total Registered:</b> {test.registration || 0}
-              </div>
-              <div>
-                <b>Price:</b> ₹{test.price}
-              </div>
-            </div>
-            <button
-              className={`w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 ${
-                isRegisterDisabled
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              }`}
-              onClick={handleRegister}
-              disabled={isRegisterDisabled}
-            >
-              {isRegisterDisabled
-                ? user
-                  ? "Registration Locked"
-                  : "Login to Register"
-                : "Buy/Register Now"}
-              <ShoppingCart className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

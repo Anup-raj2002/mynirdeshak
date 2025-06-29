@@ -23,11 +23,6 @@ export const addUser = async (userData) => {
   return response.data;
 };
 
-export const updateUser = async (userData) => {
-  const response = await axiosInstance.patch("/auth/users", userData);
-  return response.data;
-};
-
 export const deleteUser = async (profileUID) => {
   const response = await axiosInstance.delete("/auth/users", {
     data: { profileUID },
