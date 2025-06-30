@@ -34,8 +34,9 @@ const About = () => {
             About Track Your Way
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Founded by Love Kumar Sharma, Track Your Way is dedicated to empowering students 
-            with the financial support they need to pursue their educational dreams.
+            Founded by Love Kumar Sharma, Track Your Way is dedicated to
+            empowering students with the financial support they need to pursue
+            their educational dreams.
           </p>
         </div>
 
@@ -44,9 +45,10 @@ const About = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <img
-                src="https://images.pexels.com/photos/5212317/pexels-photo-5212317.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"
+                src="../../public/assets/Lav.jpg"
                 alt="Founder"
                 className="w-full max-w-md mx-auto rounded-2xl shadow-lg"
+                style={{ height: "350px" }} 
               />
             </div>
             <div>
@@ -57,15 +59,17 @@ const About = () => {
                 Love Kumar Sharma
               </h4>
               <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                With a passion for education and a vision to make quality higher education 
-                accessible to all deserving students, Love Kumar Sharma founded Track Your Way. 
-                His belief that financial constraints should never be a barrier to academic 
-                excellence drives our mission forward.
+                With a passion for education and a vision to make quality higher
+                education accessible to all deserving students, Love Kumar
+                Sharma founded Track Your Way. His belief that financial
+                constraints should never be a barrier to academic excellence
+                drives our mission forward.
               </p>
               <div className="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-500">
                 <p className="text-blue-800 font-medium italic">
-                  "Every student deserves the chance to pursue their dreams. Through Track Your Way, 
-                  we're not just providing scholarships – we're investing in the future leaders of tomorrow."
+                  "Every student deserves the chance to pursue their dreams.
+                  Through Track Your Way, we're not just providing scholarships
+                  – we're investing in the future leaders of tomorrow."
                 </p>
               </div>
             </div>
@@ -105,7 +109,7 @@ const About = () => {
               Making a difference in students' lives across the nation
             </p>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl md:text-5xl font-bold mb-2">2,500+</div>
