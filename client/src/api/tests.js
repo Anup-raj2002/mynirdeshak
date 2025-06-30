@@ -6,7 +6,7 @@ export const createTest = async (testData) => {
   return response.data;
 };
 
-export const getTest = async (testId) => {
+export const getTestById = async (testId) => {
   const response = await axiosInstance.get(`/tests/${testId}`);
   return response.data;
 };
@@ -18,6 +18,11 @@ export const updateTest = async (testId, updateData) => {
 
 export const deleteTest = async (testId) => {
   const response = await axiosInstance.delete(`/tests/${testId}`);
+  return response.data;
+};
+
+export const getTests = async (params = {}) => {
+  const response = await axiosInstance.get('/tests', { params });
   return response.data;
 };
 

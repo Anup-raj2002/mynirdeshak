@@ -12,8 +12,15 @@ export const testKeys = {
   results: (id) => [...testKeys.detail(id), 'results'],
 };
 
+export const useTests = (filters = {}, options = {}) => {
+  return useQuery({
+    queryKey: ['tests', filters],
+    queryFn: () => testApi.getTests(filters),
+    ...options,
+  });
+};
 
-export const useTest = (testId, options = {}) => {
+export const useTestById = (testId, options = {}) => {
   return useQuery({
     queryKey: testKeys.detail(testId),
     queryFn: () => testApi.getTest(testId),

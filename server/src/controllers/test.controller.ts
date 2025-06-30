@@ -15,19 +15,65 @@ import { auth } from '../config/firebase.config';
 import { v4 as uuid } from 'uuid';
 import { sendMail } from '../services/mail.service';
 import { testAttemptValidationSchema } from '../schemas/testAttempt.validator'
+import { UserRoles } from '../schemas/user.validator';
 
-export const getTest = async (
+export const getTests = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { name, description } = req.query;
+    const { role, uid } = req.user!;
+
+    const query: any = {};
+    if (name) query.name = { $regex: name, $options: 'i' };
+    if (description) query.description = { $regex: description, $options: 'i' };
+
+    const user = await User.findOne({ uid }).select('_id').lean();
+    if (!user) throw new NotFoundError("User not found");
+
+    if (role === UserRoles[0]) {
+      const payments = await TestPayment.find({ userId: user._id }).select('testId').lean();
+      const testIds = payments.map(p => p.testId);
+      query._id = { $in: testIds };
+    } else if (role === UserRoles[1]) {
+      query.instructorId = user._id;
+    }
+
+    const tests = await Test.find(query, {
+      questions: 0,
+      instructorId: 0
+    }).lean();
+
+    if (!tests.length) {
+      res.status(200).json([]);
+      return;
+    }
+
+    res.status(200).json(cleanMongoData(tests));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getTestById = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) => {
   try {
     const { testId } = req.params;
+    const mUser = await User.findOne({uid: req.user?.uid}).select('_id').lean();
+    if(!mUser) throw new AuthenticationError();
+
     const test = await Test.findById(testId)
       .populate('questions')
       .lean();
     if (!test) {
       return next(new NotFoundError('Test not found'));
+    }
+    if(req.user?.role === UserRoles[1] && !test.instructorId.equals(mUser._id.toString())) {
+      throw new AuthorizationError('You can only view tests you created.');
+    }
+    if (req.user?.role === UserRoles[0]) {
+      throw new AuthorizationError('Students are not allowed to access test details by ID');
     }
     res.status(200).json(cleanMongoData(test));
   } catch (error) {
