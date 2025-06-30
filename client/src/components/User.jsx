@@ -61,7 +61,7 @@ const User = () => {
         return;
       }
     } else {
-      delete payload.schoolName;
+      delete payload.school;
     }
 
     addUserMutation.mutate(payload, {
@@ -159,10 +159,10 @@ const User = () => {
             <div>
               <label htmlFor="school" className="block mb-1 text-sm font-medium text-gray-700">School Name</label>
               <input
-                id="schoolName"
+                id="school"
                 className="w-full border border-gray-300 rounded-md px-4 py-2.5 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out text-base"
-                name="schoolName"
-                value={form.schoolName}
+                name="school"
+                value={form.school}
                 onChange={handleChange}
                 placeholder="Student school name"
                 required
