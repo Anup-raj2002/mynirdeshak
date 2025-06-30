@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Loading = ({ message = "Loading..." }) => (
-  <div className="flex flex-col items-center justify-center py-16">
+  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 pt-20">
     <svg className="animate-spin h-10 w-10 text-blue-600 mb-4" viewBox="0 0 24 24">
       <circle
         className="opacity-25"

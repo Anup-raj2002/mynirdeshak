@@ -36,14 +36,7 @@ const Signup = () => {
     try {
       await authFunction(...args);
       await logout();
-      queryClient.removeQueries({
-        predicate: (query) => {
-          const containsPublic = query.queryKey.some(
-            (keyPart) => typeof keyPart === 'string' && keyPart.includes('public')
-          );
-          return !containsPublic;
-        },
-      });
+      queryClient.removeQueries();
       navigate(redirect || '/login', { replace: true });
       localStorage.removeItem('postLoginRedirect');
       showNotification('Please verify you mail', 'success');
