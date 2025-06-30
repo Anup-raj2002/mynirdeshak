@@ -5,6 +5,7 @@ import Loading from "./Loading";
 import ErrorPage from "./ErrorPage";
 import EmptyTests from "./EmptyTests";
 import TestCard from "./TestCard";
+import TestManageModal from "./TestManageModal";
 
 const MyTests = () => {
   const { showNotification } = useNotification();
@@ -17,6 +18,7 @@ const MyTests = () => {
   const { mutateAsync: deleteTest } = useDeleteTest();
 
   const [selectedTestId, setSelectedTestId] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (isLoading) return <Loading />;
   if (error) return <ErrorPage message={error.message} />;
@@ -29,6 +31,16 @@ const MyTests = () => {
     } catch (err) {
       showNotification(err.response?.data?.message || "Failed to delete test.", "error");
     }
+  };
+
+  const handleTestSelect = (id) => {
+    setSelectedTestId(id);
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedTestId(null);
   };
 
   return (
@@ -44,13 +56,21 @@ const MyTests = () => {
               <TestCard
                 key={test.id}
                 test={test}
-                onSelect={() => setSelectedTestId(test.id)}
+                onSelect={handleTestSelect}
                 onDelete={handleDelete}
               />
             ))}
           </div>
         ) : (
           <EmptyTests />
+        )}
+
+        {modalOpen && selectedTestId && (
+          <TestManageModal
+            testId={selectedTestId}
+            open={modalOpen}
+            onClose={handleModalClose}
+          />
         )}
       </div>
     </div>

@@ -178,7 +178,12 @@ export const submitTestAttempt = async (
         q._id.toString() === answer.questionId.toString()
       );
       if (!question) return null;
-      const isCorrect = answer.selectedOption === (question as any).correctAnswer;
+      // Map selectedOption (shuffled index) to original index using optionMap
+      if (!Array.isArray(answer.optionMap) || answer.optionMap.length !== question.options.length) {
+        return null; // invalid mapping
+      }
+      const originalIndex = answer.optionMap[answer.selectedOption];
+      const isCorrect = originalIndex === (question as any).correctAnswer;
       if (isCorrect) score += (question as any).points;
       return {
         questionId: answer.questionId,
@@ -203,6 +208,7 @@ export const submitTestAttempt = async (
       attempt.answers = validatedData.answers.map((a: any) => ({
         questionId: new Types.ObjectId(a.questionId),
         selectedOption: a.selectedOption,
+        optionMap: a.optionMap,
       }));
       attempt.score = percentageScore;
       attempt.completedAt = now;
@@ -223,7 +229,7 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
     const mUser = await User.findOne({ uid: req.user?.uid }).lean();
     if (!mUser) throw new AuthenticationError();
     const userId = mUser._id;
-    const test = await Test.findOne({ _id: testId, isPublished: true }).populate('questions', '-correctAnswer').lean();
+    const test = await Test.findOne({ _id: testId, isPublished: true }).populate('questions').lean();
     if (!test) throw new NotFoundError('Test not found');
     
     const now = new Date();
@@ -240,23 +246,34 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
     } else if (attempt.completedAt) {
       return next(new AuthorizationError('You have already completed this test.'));
     }
-    
-    const shuffledQuestions = [...test.questions].sort(() => Math.random() - 0.5).map((q: any) => ({
-      ...q,
-      options: [...q.options].sort(() => Math.random() - 0.5),
-    }));
+
+    // Shuffle questions
+    const shuffledQuestions = [...(test.questions as any[])]
+      .sort(() => Math.random() - 0.5)
+      .map((q: any) => {
+        // Shuffle options and create a mapping
+        const originalOptions = [...q.options];
+        const optionIndices = originalOptions.map((_, idx) => idx);
+        for (let i = optionIndices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [optionIndices[i], optionIndices[j]] = [optionIndices[j], optionIndices[i]];
+        }
+        const shuffledOptions = optionIndices.map(idx => originalOptions[idx]);
+        return {
+          _id: q._id,
+          question: q.question,
+          options: shuffledOptions,
+          points: q.points,
+          optionMap: optionIndices, // send this to frontend
+        };
+      });
     res.status(200).json({
       testId: test._id,
       name: test.name,
       description: test.description,
       startDateTime: test.startDateTime,
       endDateTime: test.endDateTime,
-      questions: shuffledQuestions.map((q: any) => ({
-        _id: q._id,
-        question: q.question,
-        options: q.options,
-        points: q.points,
-      })),
+      questions: shuffledQuestions,
     });
   } catch (error) {
     next(error);
