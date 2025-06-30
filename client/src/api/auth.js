@@ -13,7 +13,7 @@ import {
   sendPasswordResetEmail,
   signOut,
 } from "firebase/auth";
-
+import { registerUser } from "./users";
 const provider = new GoogleAuthProvider();
 
 export const getErrorMessage = (error) => {

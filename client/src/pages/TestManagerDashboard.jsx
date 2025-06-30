@@ -14,7 +14,7 @@ function CourseManagerDashboard() {
   const [activeTab, setActiveTab] = useState("viewTests");
 
   if (userLoading) return <Loading />;
-  if (userError) return <ErrorPage message={error.message} />;
+  // if (userError) return <ErrorPage message={userError.message} />; // TODO
   // if (!user || user.role !== "test-manager") return <ErrorPage message="Access Denied" />;
 
   const tabs = [
