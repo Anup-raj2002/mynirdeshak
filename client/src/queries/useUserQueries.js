@@ -67,31 +67,51 @@ export const useUpdateProfile = () => {
 };
 
 export const useAllUsers = (filters = {}, options = {}) => {
+  const { showNotification } = useNotification();
   return useQuery({
     queryKey: authKeys.usersList(filters),
     queryFn: () => userApi.getUsers(filters),
     ...options,
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message || error.message || "Failed to fetch users.";
+      showNotification(errorMessage, "error");
+    },
   });
 };
 
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
-  
+  const { showNotification } = useNotification();
+
   return useMutation({
     mutationFn: userApi.addUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: authKeys.users() });
+      showNotification("User created successfully!", "success");
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message || error.message || "Failed to create user.";
+      showNotification(errorMessage, "error");
     },
   });
 };
 
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
-  
+  const { showNotification } = useNotification();
+
   return useMutation({
     mutationFn: userApi.deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: authKeys.users() });
+      showNotification("User deleted successfully!", "success");
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message || error.message || "Failed to delete user.";
+      showNotification(errorMessage, "error");
     },
   });
 }; 

@@ -10,27 +10,25 @@ function UserManagement() {
   const [selectedRole, setSelectedRole] = useState("");
   const [currentFilters, setCurrentFilters] = useState({});
 
-  // Fetch users with filters (includes role and email)
   const {
-    data: users,
+    data,
     isLoading: loadingUsers,
     isError: usersError,
     error: usersErrorMessage,
     refetch: refetchUsers,
   } = useAllUsers(currentFilters);
+  const users = data?.users || [];
 
   const deleteUserMutation = useDeleteUser();
 
-  // Only filter for test-manager on frontend, rest is backend filtered
   const filteredUsers = React.useMemo(() => {
-    if (!users) return [];
+    const userList = Array.isArray(users) ? users : [];
     if (currentUser?.role === "test-manager") {
-      return users.filter((u) => u.role === "instructor" || u.role === "student");
+      return userList.filter((u) => u.role === "instructor" || u.role === "student");
     }
-    return users;
+    return userList;
   }, [users, currentUser?.role]);
-
-  // Fetch all users (reset filters)
+  
   const fetchAllUsers = () => {
     setCurrentFilters(selectedRole ? { role: selectedRole } : {});
     setSearchEmail("");
@@ -38,7 +36,6 @@ function UserManagement() {
     showNotification("Loading all users...", "info");
   };
 
-  // Search by email (always includes role filter if set)
   const searchByEmail = () => {
     const email = searchEmail.trim().toLowerCase();
     if (!email) {
@@ -49,16 +46,13 @@ function UserManagement() {
     showNotification("Searching for user...", "info");
   };
 
-  // Update filters when role changes (and when not searching)
   useEffect(() => {
     if (!searchEmail) {
       setCurrentFilters(selectedRole ? { role: selectedRole } : {});
       refetchUsers();
     }
-    // eslint-disable-next-line
   }, [selectedRole]);
 
-  // Delete handler
   const handleDeleteUser = (uid) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     deleteUserMutation.mutate(uid, {
@@ -86,6 +80,7 @@ function UserManagement() {
               >
                 <option value="">All Roles</option>
                 <option value="instructor">Instructor</option>
+                <option value="test-manager">Test Manager</option>
                 <option value="student">Student</option>
                 <option value="admin">Admin</option>
               </select>
@@ -111,7 +106,6 @@ function UserManagement() {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-900 focus:outline-none"
                 aria-label="Search by email"
               >
-                {/* Magnifying glass icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -183,16 +177,10 @@ function UserManagement() {
                     <span className="ml-1">{u.contactNumber}</span>
                   </div>
                   {u.role === "student" && (
-                    <>
                       <div>
                         <span className="font-semibold">School Name:</span>
-                        <span className="ml-1">{u.schoolName}</span>
+                        <span className="ml-1">{u.school}</span>
                       </div>
-                      <div>
-                        <span className="font-semibold">Class:</span>
-                        <span className="ml-1">{u.studentClass}</span>
-                      </div>
-                    </>
                   )}
                 </div>
               </div>
