@@ -48,11 +48,20 @@ export function useCurrentProfile() {
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
+  const { showNotification } = useNotification();
   
   return useMutation({
     mutationFn: userApi.updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: authKeys.profile() });
+      showNotification("Profile updated successfully!", "success");
+    },
+    onError: (error) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update profile.";
+      showNotification(errorMessage, "error");
     },
   });
 };

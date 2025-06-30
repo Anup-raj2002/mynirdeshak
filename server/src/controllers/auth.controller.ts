@@ -87,9 +87,8 @@ export const updateUserDetails = async (
     }
     let values: any = await baseUserValidationSchema.partial().parseAsync(req.body);
 
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-    const photoFile = files?.photo ? files.photo[0] : undefined;
-
+    const photoFile = req.file;
+    console.log(`this is the profile photo ${photoFile}`);
     const oldUser = await User.findOne({ uid: req.user.uid }).lean();
     if (!oldUser) throw new AuthenticationError();
     if (photoFile) {
@@ -115,11 +114,9 @@ export const updateUserDetails = async (
     if (!user) {
       throw new AppError('User not found after update attempt.', 404, true);
     }
-
     return res.status(200).json(cleanMongoData(user!));
   } catch (error) {
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-    const photoFile = files?.photo ? files.photo[0] : undefined;
+    const photoFile = req.file;
 
     if (photoFile) {
       try {

@@ -4,8 +4,8 @@ import { useUser } from "../contexts/UserContext.jsx";
 import UserManagement from "../components/UserManagement.jsx";
 import GrantOfflineTest from "../components/GrantOfflineTest.jsx";
 import NoUpcomingTests from "../components/NoUpcomingTests.jsx"; //TODO change to view tests
-import ProfileSetting from "../components/ProfileSetting.jsx";
-import AccountSettingsForm from "../components/AccountSetting.jsx";
+import ProfileSettings from "../components/ProfileSettings.jsx";
+import AccountSettings from "../components/AccountSettings.jsx";
 import Loading from "../components/Loading.jsx"
 import ErrorPage from "../components/ErrorPage.jsx"
 
@@ -51,7 +51,7 @@ const AdminDashboard = () => {
         <section className="flex-1 flex justify-center items-start">
           <div className="w-full flex flex-col justify-start">
             {activeTab === "viewTests" && <NoUpcomingTests />}
-            {activeTab === "profile" && <ProfileSetting />}
+            {activeTab === "profile" && <ProfileSettings />}
             {activeTab === "grantTests" && <GrantOfflineTest />}
             {activeTab === "addUser" && (
               <div className="bg-white rounded-lg shadow p-3 w-full flex flex-col">
@@ -59,7 +59,7 @@ const AdminDashboard = () => {
               </div>
             )}
             {activeTab === "userManagement" && <UserManagement />}
-            {activeTab === "Settings" && <AccountSettingsForm />}
+            {activeTab === "Settings" && <AccountSettings />}
           </div>
         </section>
       </main>

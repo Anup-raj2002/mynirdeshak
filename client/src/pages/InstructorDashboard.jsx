@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useUser } from "../contexts/UserContext";
-import ProfileSetting from "../components/ProfileSetting";
+import ProfileSettings from "../components/ProfileSettings";
 import NoUpcomingTests from "../components/NoUpcomingTests"; //TODO change to my tests
 //TODO change to the create tests
 import Loading from "../components/Loading";
 import ErrorPage from "../components/ErrorPage";
-import AccountSettingsForm from "../components/AccountSetting";
+import AccountSettings from "../components/AccountSettings";
 
 const InstructorDashboard = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -45,13 +45,13 @@ const InstructorDashboard = () => {
         <section className="flex-1 flex justify-center items-start">
           <div className="w-full max-w-lg flex flex-col justify-start">
             {/* Profile Tab */}
-            {activeTab === "profile" && <ProfileSetting />}
+            {activeTab === "profile" && <ProfileSettings />}
             {/* My Courses Tab */}
             {activeTab === "myTests" && <NoUpcomingTests />}
             {/* Create Course Tab */}
             {activeTab === "createTests" && <NoUpcomingTests />} {/*TODO change to the create tests*/}
             {/* Settings Tab */}
-            {activeTab === "settings" && <AccountSettingsForm />}
+            {activeTab === "settings" && <AccountSettings />}
           </div>
         </section>
       </main>

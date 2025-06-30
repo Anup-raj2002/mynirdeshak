@@ -4,7 +4,7 @@ import { useNotification } from "../contexts/NotificationContext";
 import { useUser } from "../contexts/UserContext";
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
-export default function AccountSettingsForm() {
+export default function AccountSettings() {
   const { profile } = useUser();
   const { showNotification } = useNotification();
 

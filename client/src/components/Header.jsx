@@ -151,6 +151,15 @@ const Header = () => {
               className="lg:hidden py-4 border-t border-gray-200"
             >
               <nav className="flex flex-col space-y-2">
+                {profile && (
+                  <Link
+                    to={roleConfig[profile.role.toLowerCase()] || roleConfig.default}
+                    className="block px-4 py-3 rounded-lg font-medium transition-colors duration-200 text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    My Dashboard
+                  </Link>
+                )}
                 {navItems.map((item, index) => (
                   <motion.div
                     key={item.name}
@@ -176,24 +185,7 @@ const Header = () => {
                      <div className="px-4 py-3">
                       <div className="w-full h-8 bg-gray-200 rounded-lg animate-pulse" />
                     </div>
-                  ) : profile ? (
-                    <button
-                      onClick={() => {
-                        handleProfileClick();
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 w-full"
-                    >
-                      {profile.photoUrl ? (
-                        <img src={profile.photoUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-8 h-8 bg-gray-200 flex items-center justify-center rounded-full">
-                          <User className="h-5 w-5 text-gray-600" />
-                        </div>
-                      )}
-                      <span>My Dashboard</span>
-                    </button>
-                  ) : (
+                  ) : !profile && (
                     <>
                       <Link
                         to="/login"

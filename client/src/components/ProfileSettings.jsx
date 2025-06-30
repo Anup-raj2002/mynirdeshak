@@ -3,7 +3,7 @@ import { useUser } from "../contexts/UserContext";
 import { useUpdateProfile } from "../queries/useUserQueries";
 import { useNotification } from "../contexts/NotificationContext";
 
-export default function ProfileForm() {
+export default function ProfileSettings() {
   const { profile, loading: loadingProfileData } = useUser();
   const updateProfileMutation = useUpdateProfile();
   const { showNotification } = useNotification();
@@ -12,11 +12,9 @@ export default function ProfileForm() {
     name: "",
     contactNumber: "",
     photo: null,
-    signature: null,
   });
 
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [signaturePreview, setSignaturePreview] = useState(null);
 
   useEffect(() => {
     if (profile) {
@@ -24,10 +22,8 @@ export default function ProfileForm() {
         name: profile.name || "",
         contactNumber: profile.contactNumber || "",
         photo: null,
-        signature: null,
       });
       setPhotoPreview(profile.photoUrl ? profile.photoUrl : null);
-      setSignaturePreview(profile.signatureUrl ? profile.signatureUrl : null);
     }
   }, [profile]);
 
@@ -46,24 +42,9 @@ export default function ProfileForm() {
     };
   }, [formData.photo, profile?.photoUrl]);
 
-  useEffect(() => {
-    if (formData.signature instanceof File) {
-      setSignaturePreview(URL.createObjectURL(formData.signature));
-    } else if (profile?.signatureUrl) {
-      setSignaturePreview(profile.signatureUrl);
-    } else {
-      setSignaturePreview(null);
-    }
-    return () => {
-      if (signaturePreview && signaturePreview.startsWith("blob:")) {
-        URL.revokeObjectURL(signaturePreview);
-      }
-    };
-  }, [formData.signature, profile?.signatureUrl]);
-
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "photo" || name === "signature") {
+    if (name === "photo") {
       const file = files[0];
       setFormData((prev) => ({ ...prev, [name]: file }));
     } else {
@@ -81,10 +62,6 @@ export default function ProfileForm() {
       updatedData.contactNumber = formData.contactNumber;
     if (formData.photo) updatedData.photo = formData.photo;
 
-    if (profile?.role === 'instructor' && formData.signature) {
-      updatedData.signature = formData.signature;
-  }
-
     if (Object.keys(updatedData).length === 0) {
       showNotification("No changes to save.", "info");
       return;
@@ -96,8 +73,6 @@ export default function ProfileForm() {
   if (loadingProfileData) {
     return <div>Loading profile data...</div>;
   }
-
-  const isInstructor = profile?.role === 'instructor';
 
   return (
     <form
@@ -166,37 +141,6 @@ export default function ProfileForm() {
         disabled={updateProfileMutation.isPending}
       />
 
-    {isInstructor && (
-        <div>
-          <label
-            className="block text-sm font-medium mb-2"
-            htmlFor="signature-upload"
-          >
-            Signature (PNG only for transparency)
-          </label>
-          <div className="w-48 h-32 bg-gray-100 flex items-center justify-center rounded mb-4">
-            {signaturePreview ? (
-              <img
-                src={signaturePreview}
-                alt="Signature Preview"
-                className="w-full h-full object-contain rounded"
-              />
-            ) : (
-              <span className="text-gray-400 text-3xl">✍️</span>
-            )}
-          </div>
-          <input
-            type="file"
-            id="signature-upload"
-            name="signature"
-            accept="image/png"
-            onChange={handleChange}
-            className="border rounded px-3 py-2"
-            disabled={updateProfileMutation.isPending}
-          />
-        </div>
-      )}
-
       <button
         type="submit"
         className="bg-blue-600 text-white px-8 py-2 rounded w-full sm:w-auto float-right"
@@ -204,15 +148,6 @@ export default function ProfileForm() {
       >
         {updateProfileMutation.isPending ? "Saving Changes..." : "Save Changes"}
       </button>
-
-      {updateProfileMutation.isError && (
-        <p className="text-red-600 text-sm mt-2">
-          Error: {updateProfileMutation.error.message || "Failed to save changes."}
-        </p>
-      )}
-      {updateProfileMutation.isSuccess && (
-        <p className="text-green-600 text-sm mt-2">Changes saved successfully!</p>
-      )}
     </form>
   );
 }

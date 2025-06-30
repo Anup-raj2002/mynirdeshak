@@ -1,16 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Award, Calendar, BookOpen, TrendingUp, Bell, Settings, LogOut } from 'lucide-react';
+import SettingsModal from '../components/SettingsModal';
+import { useUser } from '../contexts/UserContext';
+import { logout } from '../api/auth';
+import { useNotification } from '../contexts/NotificationContext';
+import { useNavigate } from 'react-router-dom';
+import Loading from '../components/Loading';
+import ErrorPage from '../components/ErrorPage';
 
 const Dashboard = () => {
-  const studentData = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    registrationDate: '2024-01-15',
-    examStatus: 'Scheduled',
-    examDate: '2024-02-20',
-    rank: 'Not Available',
-    scholarshipAmount: 'Pending'
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { profile, loading, error } = useUser();
+  const { showNotification } = useNotification();
+  const navigate = useNavigate();
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorPage message={error.message || "Can't find your profile"} />;
+  if (!profile || profile.role !== 'student') {
+    return <ErrorPage message="Access Denied. You must be a student to view this page." />;
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+      showNotification('You have been logged out.', 'success');
+    } catch (error) {
+      showNotification('Logout failed. Please try again.', 'error');
+    }
   };
 
   const stats = [
@@ -20,13 +38,8 @@ const Dashboard = () => {
     { icon: TrendingUp, label: 'Scholarship', value: 'Pending', color: 'from-purple-400 to-pink-500' }
   ];
 
-  const notifications = [
-    { id: 1, message: 'Exam scheduled for February 20, 2024', time: '2 hours ago', type: 'info' },
-    { id: 2, message: 'Registration completed successfully', time: '1 day ago', type: 'success' },
-    { id: 3, message: 'Please verify your email address', time: '2 days ago', type: 'warning' }
-  ];
-
   return (
+    <>
     <div className="min-h-screen py-12 bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -39,13 +52,18 @@ const Dashboard = () => {
           <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-6 mb-6 md:mb-0">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 rounded-2xl">
-                  <User className="h-12 w-12 text-white" />
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-1 rounded-full">
+                  {profile?.photoUrl ? (
+                    <img src={profile.photoUrl} alt="Profile" className="h-12 w-12 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-12 h-12 flex items-center justify-center">
+                      <User className="h-8 w-8 text-white" />
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Welcome back, {studentData.name}!</h1>
-                  <p className="text-gray-600 text-lg">{studentData.email}</p>
-                  <p className="text-sm text-gray-500">Registered on {new Date(studentData.registrationDate).toLocaleDateString()}</p>
+                  <h1 className="text-3xl font-bold text-gray-900">Welcome back, {profile?.name || 'User'}!</h1>
+                  <p className="text-gray-600 text-lg">{profile?.email}</p>
                 </div>
               </div>
               
@@ -53,6 +71,7 @@ const Dashboard = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsModalOpen(true)}
                   className="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-200"
                 >
                   <Settings className="h-4 w-4" />
@@ -62,6 +81,7 @@ const Dashboard = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={handleLogout}
                   className="flex items-center space-x-2 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg transition-colors duration-200"
                 >
                   <LogOut className="h-4 w-4" />
@@ -102,7 +122,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-3 space-y-8">
             {/* Exam Information */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -154,104 +174,12 @@ const Dashboard = () => {
                 </div>
               </div>
             </motion.div>
-
-            {/* Progress Timeline */}
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100"
-            >
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Application Progress</h2>
-              
-              <div className="space-y-4">
-                {[
-                  { step: 'Registration', status: 'completed', date: 'Jan 15, 2024' },
-                  { step: 'Document Verification', status: 'completed', date: 'Jan 16, 2024' },
-                  { step: 'Exam Scheduled', status: 'current', date: 'Feb 20, 2024' },
-                  { step: 'Result Declaration', status: 'pending', date: 'Mar 5, 2024' },
-                  { step: 'Scholarship Disbursement', status: 'pending', date: 'TBD' }
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center space-x-4">
-                    <div className={`w-4 h-4 rounded-full ${
-                      item.status === 'completed' ? 'bg-green-500' :
-                      item.status === 'current' ? 'bg-blue-500' : 'bg-gray-300'
-                    }`} />
-                    <div className="flex-1">
-                      <h4 className={`font-medium ${
-                        item.status === 'current' ? 'text-blue-600' : 'text-gray-900'
-                      }`}>
-                        {item.step}
-                      </h4>
-                      <p className="text-sm text-gray-500">{item.date}</p>
-                    </div>
-                    {item.status === 'completed' && (
-                      <span className="text-green-600 text-sm font-medium">Completed</span>
-                    )}
-                    {item.status === 'current' && (
-                      <span className="text-blue-600 text-sm font-medium">In Progress</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-8">
-            {/* Notifications */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Notifications</h3>
-                <Bell className="h-5 w-5 text-gray-400" />
-              </div>
-              
-              <div className="space-y-4">
-                {notifications.map((notification) => (
-                  <div key={notification.id} className="border-l-4 border-blue-500 pl-4 py-2">
-                    <p className="text-sm text-gray-900 mb-1">{notification.message}</p>
-                    <p className="text-xs text-gray-500">{notification.time}</p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Quick Actions */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
-            >
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
-              
-              <div className="space-y-3">
-                {[
-                  { label: 'Update Profile', color: 'bg-blue-600 hover:bg-blue-700' },
-                  { label: 'Download Documents', color: 'bg-green-600 hover:bg-green-700' },
-                  { label: 'Contact Support', color: 'bg-purple-600 hover:bg-purple-700' },
-                  { label: 'View Guidelines', color: 'bg-orange-600 hover:bg-orange-700' }
-                ].map((action, index) => (
-                  <motion.button
-                    key={index}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`w-full ${action.color} text-white px-4 py-3 rounded-lg font-medium transition-colors duration-200`}
-                  >
-                    {action.label}
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
           </div>
         </div>
       </div>
     </div>
+      <SettingsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    </>
   );
 };
 

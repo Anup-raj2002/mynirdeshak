@@ -13,13 +13,18 @@ export function NotificationProvider({ children }) {
   }, []);
 
   const clearNotification = useCallback(() => setNotification(null), []);
+  const typeColorMap = {
+    success: 'text-green-700',
+    error: 'text-red-700',
+    info: 'text-blue-700',
+  };  
 
   return (
     <NotificationContext.Provider value={{ notification, showNotification, clearNotification }}>
       {children}
       {notification && (
-        <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded shadow-lg bg-white border border-gray-200 text-${notification.type === 'error' ? 'red' : notification.type === 'success' ? 'green' : 'blue'}-700`}>
-          {notification.message}
+        <div className={`fixed top-4 right-4 z-50 px-4 py-2 rounded shadow-lg bg-white border border-gray-200 ${typeColorMap[notification.type]}`}>
+        {notification.message}
         </div>
       )}
     </NotificationContext.Provider>
