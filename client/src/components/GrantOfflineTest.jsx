@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useGrantTestToStudent } from "../../queries/useTestsQueries"
-import { useNotification } from "../../contexts/NotificationContext";
+import { useGrantTestToStudent } from "../queries/useTestsQueries"
+import { useNotification } from "../contexts/NotificationContext";
 
 function GrantOfflineTest() {
   const [grantForm, setGrantForm] = useState({

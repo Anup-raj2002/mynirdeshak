@@ -22,7 +22,7 @@ export function useCurrentProfile() {
       setFirebaseUser(user);
       setFirebaseLoading(false);
       if (!user) {
-        queryClient.removeQueries({ queryKey: userQueryKeys.profile });
+        queryClient.removeQueries({ queryKey: authKeys.profile() });
       }
     });
     return () => unsubscribe();

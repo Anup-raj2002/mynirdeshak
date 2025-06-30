@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useUser } from "../../context/UserContext";
-import { useUpdateCurrentProfile } from "../../hooks/useUserQueries";
-import { useNotification } from "../../context/NotificationContext";
+import { useUser } from "../contexts/UserContext";
+import { useUpdateProfile } from "../queries/useUserQueries";
+import { useNotification } from "../contexts/NotificationContext";
 
 export default function ProfileForm() {
   const { profile, loading: loadingProfileData } = useUser();
-  const updateProfileMutation = useUpdateCurrentProfile();
+  const updateProfileMutation = useUpdateProfile();
   const { showNotification } = useNotification();
 
   const [formData, setFormData] = useState({
@@ -81,7 +81,7 @@ export default function ProfileForm() {
       updatedData.contactNumber = formData.contactNumber;
     if (formData.photo) updatedData.photo = formData.photo;
 
-    if (profile?.role === 'INSTRUCTOR' && formData.signature) {
+    if (profile?.role === 'instructor' && formData.signature) {
       updatedData.signature = formData.signature;
   }
 
@@ -97,7 +97,7 @@ export default function ProfileForm() {
     return <div>Loading profile data...</div>;
   }
 
-  const isInstructor = profile?.role === 'INSTRUCTOR';
+  const isInstructor = profile?.role === 'instructor';
 
   return (
     <form

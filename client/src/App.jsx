@@ -16,6 +16,10 @@ import { UserProvider } from './contexts/UserContext';
 import ForgotPassword from './pages/ForgotPassword';
 import NotFound from './pages/NotFound';
 import UpcomingTests from './pages/UpcomingTest';
+import ErrorPage from './components/ErrorPage';
+import AdminDashboard from './pages/AdminDashboard';
+import TestManagerDashboard from './pages/TestManagerDashboard';
+import InstructorDashboard from './pages/InstructorDashboard';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -45,12 +49,15 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/student" element={<Dashboard />} />
+                <Route path="/dashboard/admin" element={<AdminDashboard />} />
+                <Route path="/dashboard/manager" element={<TestManagerDashboard />} />
+                <Route path="/dashboard/instructor" element={<InstructorDashboard />} />
                 {/* <Route path="order-success/:testId" element={<OrderComplete />} /> */}
-                <Route path="/terms" element={<NotFound />} />
-                <Route path="/privacy" element={<NotFound />} />
-                <Route path="/refund" element={<NotFound />} />
-                <Route path="/disclaimer" element={<NotFound />} />
+                <Route path="/terms" element={<ErrorPage message='create terms and condition page' />} />
+                <Route path="/privacy" element={<ErrorPage message='create privacy policy'/>} />
+                <Route path="/refund" element={<ErrorPage message='create refund page' />} />
+                <Route path="/disclaimer" element={<ErrorPage message='create disclaimer' />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
