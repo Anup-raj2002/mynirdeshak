@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-
+import { resendVerificationEmail } from "../api/auth";
 import { loginWithEmail, loginWithGoogle, logout } from "../api/auth";
 import { useNotification } from "../contexts/NotificationContext";
 import roleConfig from "../utils/roleConfig";
@@ -19,6 +19,16 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailUnverified, setEmailUnverified] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  React.useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -38,6 +48,7 @@ const Login = () => {
     queryClient.removeQueries();
     try {
       setIsLoading(true);
+      setEmailUnverified(false);
       const user = await authFunction(...args);
       const actualRole = await getUserRole(user);
 
@@ -48,7 +59,12 @@ const Login = () => {
       navigate(redirect || roleConfig[actualRole.toLowerCase()] || roleConfig.default, { replace: true });
       localStorage.removeItem("postLoginRedirect");
     } catch (err) {
-      showNotification(err.message || "Login failed. Try again", "error");
+      if (err.message === "Please verify your email before logging in") {
+        setEmailUnverified(true);
+        showNotification("Please check your email (including spam/other folders) to verify your account.", "info");
+      } else {
+        showNotification(err.message || "Login failed. Try again", "error");
+      }
       await logout();
     } finally {
       setIsLoading(false);
@@ -62,6 +78,20 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     handleLogin(loginWithGoogle);
+  };
+
+  const handleResendVerification = async () => {
+    if (resendCooldown > 0) return;
+    try {
+      setIsLoading(true);
+      await resendVerificationEmail(formData.email, formData.password);
+      showNotification("Verification email sent! Please check your inbox.", "success");
+      setResendCooldown(60); 
+    } catch (error) {
+      showNotification(error.message, "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -226,6 +256,26 @@ const Login = () => {
                 Forgot password?
               </Link>
             </motion.div>
+
+            {emailUnverified && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+              >
+                <p className="text-sm text-yellow-800">
+                  Your email is not verified. Please check your inbox (and spam folder).
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendCooldown > 0 || isLoading}
+                  className="mt-2 text-sm font-semibold text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed"
+                >
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+                </button>
+              </motion.div>
+            )}
 
             {/* Submit Button */}
             <motion.button

@@ -109,17 +109,25 @@ export const signupWithGoogle = async () => {
   }
 };
 
-export const resendVerificationEmail = async () => {
-  const user = auth.currentUser;
-  if (user && !user.emailVerified) {
-    try {
+export const resendVerificationEmail = async (email, password) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    if (user && !user.emailVerified) {
       await sendEmailVerification(user);
       return "Verification email sent!";
-    } catch (error) {
-      throw new Error(getErrorMessage(error));
+    } else if (user && user.emailVerified) {
+      throw new Error("Your email is already verified.");
+    } else {
+      throw new Error("Could not find user to send verification email.");
     }
-  } else {
-    throw new Error("User is either not logged in or already verified");
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  } finally {
+    if (auth.currentUser) {
+      await signOut(auth);
+    }
   }
 };
 
