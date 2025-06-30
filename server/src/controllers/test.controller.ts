@@ -174,7 +174,7 @@ export const submitTestAttempt = async (
     }
     let score = 0;
     const gradedAnswers = validatedData.answers.map((answer: any) => {
-      const question = test.questions.find(q =>
+      const question = test.questions?.find(q =>
         q._id.toString() === answer.questionId.toString()
       );
       if (!question) return null;
@@ -186,7 +186,7 @@ export const submitTestAttempt = async (
         isCorrect,
       };
     }).filter(Boolean);
-    const totalPoints = test.questions.reduce((acc: any, q: any) => acc + (q as any).points, 0);
+    const totalPoints = test.questions?.reduce((acc: any, q: any) => acc + (q as any).points, 0);
     const percentageScore = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
     let attempt = await TestAttempt.findOne({ testId: testId, userId: mUser._id });
     if (!attempt) {

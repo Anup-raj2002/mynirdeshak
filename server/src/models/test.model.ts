@@ -5,10 +5,10 @@ export interface ITest extends Document {
   name: string;
   description: string;
   isPublished: boolean;
-  questions: Types.ObjectId[];
+  questions?: Types.ObjectId[];
   startDateTime: Date;
   endDateTime: Date;
-  registration: number;
+  registration?: number;
   registrationEndDateTime: Date;
   price: number;
 }

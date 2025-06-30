@@ -1,54 +1,74 @@
-import React from 'react';
-import { Calendar, Clock, Users } from 'lucide-react';
+import React from "react";
+import { Clock, Users, Trash2, Calendar, Edit } from "lucide-react";
+import PublishTestButton from "./PublishTestButton";
 
-function formatDuration(start, end) {
-  const diff = (new Date(end) - new Date(start)) / 1000;
-  const hours = Math.floor(diff / 3600);
-  const minutes = Math.floor((diff % 3600) / 60);
-  return `${hours ? hours + "h " : ""}${minutes}m`;
-}
+const TestCard = ({ test, onSelect, onDelete }) => {
+  const isPast = new Date(test.endDateTime) < new Date();
 
-function formatIST(date) {
-  return new Date(date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
-}
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
-const TestCard = ({ test, isRegisterDisabled, countdown, description, onRegister }) => (
-  <div className="bg-white rounded-xl shadow flex flex-col gap-4 p-6 w-full max-w-xs min-h-[340px] mx-auto">
-    <div className="flex items-center justify-between">
-      <h2 className="text-2xl font-bold">{test.name}</h2>
-      <span className="text-lg font-semibold text-blue-600">₹{test.price}</span>
-    </div>
-    <div className="text-gray-500 text-sm mb-2 line-clamp-3 min-h-[48px]">{description || 'No description provided.'}</div>
-    <div className="flex flex-wrap gap-4 text-gray-600">
-      <div className="flex items-center gap-1">
-        <Calendar className="w-5 h-5" />
-        {formatIST(test.startDateTime)}
-      </div>
-      <div className="flex items-center gap-1">
-        <Clock className="w-5 h-5" />
-        Duration: {formatDuration(test.startDateTime, test.endDateTime)}
-      </div>
-      <div className="flex items-center gap-1">
-        <Users className="w-5 h-5" />
-        {test.registration || 0} Registered
-      </div>
-      <div className="flex items-center gap-1">
-        <Calendar className="w-5 h-5" />
-        Registration closes in: <span className="font-semibold">{countdown || "..."}</span>
-      </div>
-    </div>
-    <button
-      className={`mt-auto w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 ${
-        isRegisterDisabled
-          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-          : "bg-blue-600 hover:bg-blue-700 text-white"
+  return (
+    <div
+      onClick={() => onSelect(test._id)}
+      className={`bg-white rounded-xl shadow-md border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer ${
+        isPast ? "opacity-60 bg-gray-50" : ""
       }`}
-      disabled={isRegisterDisabled}
-      onClick={onRegister}
     >
-      Register
-    </button>
-  </div>
-);
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h3 className="text-xl font-bold text-gray-800">{test.name}</h3>
+          <p className="text-sm text-gray-500 mt-1">{test.description}</p>
+        </div>
+        <span
+          className={`px-3 py-1 text-xs font-semibold rounded-full ${
+            test.isPublished
+              ? "bg-green-100 text-green-800"
+              : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          {test.isPublished ? "Published" : "Draft"}
+        </span>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
+          <div className="flex items-center gap-1.5" title="Registrations">
+            <Users size={16} />
+            <span>{test.registration || 0} Registered</span>
+          </div>
+          <div className="flex items-center gap-1.5" title="Start Date">
+            <Calendar size={16} />
+            <span>{formatDate(test.startDateTime)}</span>
+          </div>
+          <div className="flex items-center gap-1.5" title="End Date">
+            <Clock size={16} />
+            <span>{formatDate(test.endDateTime)}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 mt-2 sm:mt-0">
+          <PublishTestButton test={test} />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(test._id);
+            }}
+            className="flex items-center gap-2 px-3 py-1 text-sm font-semibold border rounded-lg transition-colors duration-200 bg-red-100 text-red-700 hover:bg-red-200 border-red-200 disabled:opacity-50"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default TestCard; 

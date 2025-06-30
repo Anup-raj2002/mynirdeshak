@@ -3,7 +3,7 @@ import User from "../components/User.jsx";
 import { useUser } from "../contexts/UserContext.jsx";
 import UserManagement from "../components/UserManagement.jsx";
 import GrantOfflineTest from "../components/GrantOfflineTest.jsx";
-import NoUpcomingTests from "../components/NoUpcomingTests.jsx"; //TODO change to view tests
+import MyTests from "../components/MyTests.jsx";
 import ProfileSettings from "../components/ProfileSettings.jsx";
 import AccountSettings from "../components/AccountSettings.jsx";
 import Loading from "../components/Loading.jsx"
@@ -50,7 +50,7 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <section className="flex-1 flex justify-center items-start">
           <div className="w-full flex flex-col justify-start">
-            {activeTab === "viewTests" && <NoUpcomingTests />}
+            {activeTab === "viewTests" && <MyTests />}
             {activeTab === "profile" && <ProfileSettings />}
             {activeTab === "grantTests" && <GrantOfflineTest />}
             {activeTab === "addUser" && (
