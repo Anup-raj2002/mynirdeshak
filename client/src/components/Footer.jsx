@@ -84,7 +84,7 @@ const Footer = () => {
                   className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-200"
                 >
                   <Mail className="h-5 w-5 text-blue-400" />
-                  <span>support@mynirdeshak.com</span>
+                  <span>mynirdeshak@gmail.com</span>
                 </motion.div>
                 <motion.div
                   whileHover={{ x: 5 }}

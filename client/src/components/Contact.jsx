@@ -28,7 +28,7 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email Us',
-      details: 'support@trackyourway.com',
+      details: 'mynirdeshak@gmail.com',
       subtitle: 'We reply within 24 hours'
     },
     {

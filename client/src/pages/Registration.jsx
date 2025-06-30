@@ -540,10 +540,10 @@ const Registration = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="mailto:support@trackyourway.com"
+              href="mailto:mynirdeshak@gmail.com"
               className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
             >
-              support@trackyourway.com
+              mynirdeshak@gmail.com
             </a>
             <a
               href="tel:+911234567890"
