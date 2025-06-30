@@ -5,7 +5,6 @@ import Loading from "./Loading";
 import ErrorPage from "./ErrorPage";
 import EmptyTests from "./EmptyTests";
 import TestCard from "./TestCard";
-//import TestModal from "./TestModal";
 
 const MyTests = () => {
   const { showNotification } = useNotification();
@@ -37,21 +36,15 @@ const MyTests = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">My Tests</h1>
-          {/* <button
-            onClick={() => setSelectedTestId("new")}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-blue-700 transition"
-          >
-            Create Test
-          </button> */}
         </div>
 
         {tests && tests.length > 0 ? (
           <div className="space-y-4">
             {tests.map((test) => (
               <TestCard
-                key={test._id}
+                key={test.id}
                 test={test}
-                onSelect={() => setSelectedTestId(test._id)}
+                onSelect={() => setSelectedTestId(test.id)}
                 onDelete={handleDelete}
               />
             ))}
@@ -59,15 +52,6 @@ const MyTests = () => {
         ) : (
           <EmptyTests />
         )}
-
-        {/* {selectedTestId && (
-          <TestModal
-            testId={selectedTestId}
-            onClose={() => {
-              setSelectedTestId(null);
-            }}
-          />
-        )} */}
       </div>
     </div>
   );

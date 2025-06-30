@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useSearchParams, useParams, Link } from "react-router-dom";
 import { CheckCircle, XCircle } from "lucide-react";
-import { useOrderComplete } from "../queries/useTestsQueries";
+import { useCheckPaymentStatus } from "../queries/useTestsQueries";
 import Loading from "../components/Loading";
 import ErrorPage from "../components/ErrorPage";
 import { motion } from "framer-motion";
@@ -12,18 +12,10 @@ const OrderSuccess = () => {
   const orderId = searchParams.get("order_id");
 
   const {
-    mutate: completeOrder,
     isLoading,
     isError,
-    isSuccess,
     error,
-  } = useOrderComplete();
-
-  useEffect(() => {
-    if (testId && orderId) {
-      completeOrder({ testId, orderId });
-    }
-  }, [testId, orderId, completeOrder]);
+  } = useCheckPaymentStatus(testId, orderId);
 
   if (!orderId || !testId) {
     return (
@@ -42,13 +34,12 @@ const OrderSuccess = () => {
   if (isError) {
     return (
       <ErrorPage
-        message={error?.response?.data?.message || "We couldn't verify your payment. Please contact support if you were charged."}
+        message={error?.response?.data?.message || "We couldn't verify your payment. Please contact support if you were charged. Order Id " + orderId}
         icon={<XCircle className="text-red-500 w-16 h-16 mx-auto mb-4" />}
       />
     );
   }
 
-  if (isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
         <motion.div
@@ -88,8 +79,5 @@ const OrderSuccess = () => {
       </div>
     );
   }
-  
-  return null; 
-};
 
 export default OrderSuccess; 

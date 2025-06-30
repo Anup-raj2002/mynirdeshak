@@ -69,7 +69,7 @@ export const getTestById = async (
     if (!test) {
       return next(new NotFoundError('Test not found'));
     }
-    if(req.user?.role === UserRoles[1] && !test.instructorId.equals(mUser._id.toString())) {
+    if(req.user?.role === UserRoles[1] && !test.instructorId.toString() === mUser.id) {
       throw new AuthorizationError('You can only view tests you created.');
     }
     if (req.user?.role === UserRoles[0]) {
@@ -108,7 +108,7 @@ export const deleteTest = async (
     if (!test) throw new NotFoundError('Test not found');
     const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
     if(!mUser) throw new AuthenticationError();
-    if (req.user?.role === 'instructor' && !test.instructorId.equals(mUser.id)) {
+    if (req.user?.role === 'instructor' && !test.instructorId.toString() === mUser.id) {
       throw new AuthorizationError('You do not have permission to delete this test');
     }
     await Question.deleteMany({ _id: { $in: test.questions } });
@@ -309,7 +309,7 @@ export const updateTest = async (
     }
     const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
     if(!mUser) throw new AuthenticationError();
-    if (req.user?.role === 'instructor' && !test.instructorId.equals(mUser.id)) {
+    if (req.user?.role === 'instructor' && !test.instructorId.toString() === mUser.id) {
       throw new AuthorizationError('You cannot modify tests owned by other instructors');
     }
     if (updateData.name !== undefined) test.name = updateData.name;
@@ -481,6 +481,14 @@ export const orderComplete = async (req: AuthRequest, res: Response, next: NextF
     const existingPaymentRecord = await TestPayment.exists({ orderId: order_id });
     if (existingPaymentRecord) {
       res.status(200).json({ message: 'Payment successful' });
+      return;
+    }
+    const alreadyRegistered = await TestPayment.exists({
+      testId: testId,
+      userId: mUser._id
+    });
+    if (alreadyRegistered) {
+      res.status(200).json({ message: 'Payment already processed for this test' });
       return;
     }
     const orderDetails = (await CashFree.PGOrderFetchPayments(order_id.toString())).data;

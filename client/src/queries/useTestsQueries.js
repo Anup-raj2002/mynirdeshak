@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as testApi from '../api/tests';
+import { useNotification } from '../contexts/NotificationContext';
 
 
 export const testKeys = {
@@ -10,11 +11,12 @@ export const testKeys = {
   detail: (id) => [...testKeys.details(), id],
   rankings: (id) => [...testKeys.detail(id), 'rankings'],
   results: (id) => [...testKeys.detail(id), 'results'],
+  payment: (id, orderId) => [...testKeys.detail(id), orderId],
 };
 
 export const useTests = (filters = {}, options = {}) => {
   return useQuery({
-    queryKey: ['tests', filters],
+    queryKey: testKeys.list(filters),
     queryFn: () => testApi.getTests(filters),
     ...options,
   });
@@ -23,7 +25,7 @@ export const useTests = (filters = {}, options = {}) => {
 export const useTestById = (testId, options = {}) => {
   return useQuery({
     queryKey: testKeys.detail(testId),
-    queryFn: () => testApi.getTest(testId),
+    queryFn: () => testApi.getTestById(testId),
     enabled: !!testId,
     ...options,
   });
@@ -31,34 +33,52 @@ export const useTestById = (testId, options = {}) => {
 
 export const useCreateTest = () => {
   const queryClient = useQueryClient();
+  const { showNotification } = useNotification();
   
   return useMutation({
     mutationFn: testApi.createTest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() });
+      showNotification('Test created successfully!', 'success');
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create test.';
+      showNotification(errorMessage, 'error');
     },
   });
 };
 
 export const useUpdateTest = () => {
   const queryClient = useQueryClient();
+  const { showNotification } = useNotification();
   
   return useMutation({
     mutationFn: ({ testId, updateData }) => testApi.updateTest(testId, updateData),
     onSuccess: (data, { testId }) => {
       queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
       queryClient.invalidateQueries({ queryKey: testKeys.lists() });
+      showNotification('Test updated successfully!', 'success');
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update test.';
+      showNotification(errorMessage, 'error');
     },
   });
 };
 
 export const useDeleteTest = () => {
   const queryClient = useQueryClient();
+  const { showNotification } = useNotification();
   
   return useMutation({
     mutationFn: testApi.deleteTest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: testKeys.lists() });
+      showNotification('Test deleted successfully!', 'success');
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete test.';
+      showNotification(errorMessage, 'error');
     },
   });
 };
@@ -126,17 +146,13 @@ export const useCreateOrder = () => {
   });
 };
 
-export const useOrderComplete = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ testId, orderId }) => testApi.orderComplete(testId, orderId),
-    onSuccess: (data, { testId }) => {
-      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
-    },
+export const useCheckPaymentStatus = (testId, orderId) => {  
+  return useQuery({
+    queryKey: testKeys.payment(testId, orderId),
+    queryFn: () => testApi.checkPaymentStatus(testId, orderId),
+    enabled: !!testId && !!orderId,
   });
 };
-
 
 export const useGrantTestToStudent = () => {
   const queryClient = useQueryClient();

@@ -8,7 +8,7 @@ export default function PublishTestButton({ test }) {
   const handleTogglePublish = (e) => {
     e.stopPropagation();
     mutate({
-      testId: test._id,
+      testId: test.id,
       updateData: { isPublished: !test.isPublished },
     });
   };

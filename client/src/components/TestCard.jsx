@@ -17,7 +17,7 @@ const TestCard = ({ test, onSelect, onDelete }) => {
 
   return (
     <div
-      onClick={() => onSelect(test._id)}
+      onClick={() => onSelect(test.id)}
       className={`bg-white rounded-xl shadow-md border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer ${
         isPast ? "opacity-60 bg-gray-50" : ""
       }`}
@@ -59,7 +59,7 @@ const TestCard = ({ test, onSelect, onDelete }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onDelete(test._id);
+              onDelete(test.id);
             }}
             className="flex items-center gap-2 px-3 py-1 text-sm font-semibold border rounded-lg transition-colors duration-200 bg-red-100 text-red-700 hover:bg-red-200 border-red-200 disabled:opacity-50"
           >

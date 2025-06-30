@@ -31,7 +31,7 @@ testRouter.use(authenticate);
 testRouter.get('/', getTests);
 
 testRouter.post('/:testId/order', authorize(['student']), createOrder);
-testRouter.post('/:testId/order/complete', authorize(['student']), orderComplete);
+testRouter.get('/:testId/order', authorize(['student']), orderComplete);
 testRouter.post('/:testId/attempt/start', authorize(['student']), startTestAttempt);
 testRouter.post('/:testId/attempt/submit', authorize(['student']), submitTestAttempt);
 testRouter.get('/:testId/result', authorize(['student']), getTestResult);

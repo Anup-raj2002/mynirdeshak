@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import { useNotification } from "../contexts/NotificationContext";
 import { load } from "@cashfreepayments/cashfree-js";
-import TestCard from "../components/TestCard";
+import PublicTestCard from "../components/PublicTestCard";
 import NoUpcomingTests from "../components/NoUpcomingTests";
 import Loading from "../components/Loading";
 import { useCreateOrder, usePublicTests } from "../queries/useTestsQueries";
@@ -46,7 +46,7 @@ const UpcomingTests = () => {
     const updateCountdowns = () => {
       const newCountdowns = {};
       tests.forEach((test) => {
-        newCountdowns[test._id] = formatCountdown(test.registrationEndDateTime);
+        newCountdowns[test.id] = formatCountdown(test.registrationEndDateTime);
       });
       setCountdowns(newCountdowns);
     };
@@ -97,7 +97,7 @@ const UpcomingTests = () => {
       }
       
       try {
-        const purchaseResponse = await purchaseMutation.mutateAsync(test._id);
+        const purchaseResponse = await purchaseMutation.mutateAsync(test.id);
         const paymentSessionId = purchaseResponse.payment_session_id;
         await doPayment(paymentSessionId);
       } catch (error) {
@@ -118,14 +118,14 @@ const UpcomingTests = () => {
     <div className="min-h-screen bg-gray-50 py-10">
       <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {tests.map((test) => (
-          <TestCard
-            key={test._id}
+          <PublicTestCard
+            key={test.id}
             test={{
               ...test,
               duration: formatDuration(test.startDateTime, test.endDateTime),
             }}
             isRegisterDisabled={isRegisterDisabled(test)}
-            countdown={countdowns[test._id]}
+            countdown={countdowns[test.id]}
             description={test.description}
             onRegister={() => handleRegister(test)}
           />
