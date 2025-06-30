@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, GraduationCap, User, LogIn } from 'lucide-react';
+import { Menu, X, GraduationCap, User, LogIn, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '../contexts/UserContext';
+import { useNotification } from '../contexts/NotificationContext';
+import { logout } from '../api/auth';
 import roleConfig from '../utils/roleConfig';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, loading } = useUser();
+  const { showNotification } = useNotification();
+  const dropdownRef = useRef(null);
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -25,14 +30,27 @@ const Header = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
-  const handleProfileClick = () => {
-    if (profile && profile.role) {
-      const path = roleConfig[profile.role.toLowerCase()] || roleConfig.default;
-      navigate(path);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+      showNotification('You have been logged out.', 'success');
+    } catch (error) {
+      showNotification(error.message || 'Logout failed.', 'error');
     }
   };
 
@@ -97,19 +115,48 @@ const Header = () => {
             {loading ? (
               <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse" />
             ) : profile ? (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={handleProfileClick}
-                className="rounded-full overflow-hidden border-2 border-blue-500 hover:border-blue-700 transition-all duration-300"
-              >
-                {profile.photoUrl ? (
-                  <img src={profile.photoUrl} alt="Profile" className="w-10 h-10 object-cover" />
-                ) : (
-                  <div className="w-10 h-10 bg-gray-200 flex items-center justify-center">
-                    <User className="h-6 w-6 text-gray-600" />
-                  </div>
-                )}
-              </motion.button>
+              <div className="relative" ref={dropdownRef}>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="rounded-full overflow-hidden border-2 border-blue-500 hover:border-blue-700 transition-all duration-300"
+                >
+                  {profile.photoUrl ? (
+                    <img src={profile.photoUrl} alt="Profile" className="w-10 h-10 object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 bg-gray-200 flex items-center justify-center">
+                      <User className="h-6 w-6 text-gray-600" />
+                    </div>
+                  )}
+                </motion.button>
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100"
+                    >
+                      <Link
+                        to={roleConfig[profile.role.toLowerCase()] || roleConfig.default}
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      >
+                        My Dashboard
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full text-left block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600"
+                      >
+                        Logout
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <>
                 <Link
@@ -185,7 +232,7 @@ const Header = () => {
                      <div className="px-4 py-3">
                       <div className="w-full h-8 bg-gray-200 rounded-lg animate-pulse" />
                     </div>
-                  ) : !profile && (
+                  ) : !profile ? (
                     <>
                       <Link
                         to="/login"
@@ -204,6 +251,17 @@ const Header = () => {
                         <span>Sign Up</span>
                       </Link>
                     </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center space-x-2 px-4 py-3 text-red-600 hover:text-red-700 font-medium transition-colors duration-200 w-full"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </button>
                   )}
                 </div>
               </nav>
