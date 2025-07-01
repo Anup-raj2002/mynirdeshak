@@ -7,8 +7,8 @@ const Home = () => {
   const stats = [
     { icon: Award, value: '₹1,00,000', label: 'Top Scholarship', color: 'from-yellow-400 to-orange-500' },
     { icon: Users, value: '2,500+', label: 'Students Registered', color: 'from-green-400 to-emerald-500' },
-    { icon: BookOpen, value: '95%', label: 'Success Rate', color: 'from-purple-400 to-pink-500' },
-    { icon: TrendingUp, value: '₹50L+', label: 'Total Distributed', color: 'from-blue-400 to-cyan-500' }
+    { icon: BookOpen, value: '100%', label: 'Success Rate', color: 'from-purple-400 to-pink-500' },
+    { icon: TrendingUp, value: '₹2cr+', label: 'Aim to Distribute', color: 'from-blue-400 to-cyan-500' }
   ];
 
   const features = [
@@ -201,7 +201,7 @@ const Home = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Why Choose Track Your Way?
+              Why Choose My Nirdeshak?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               We're committed to making higher education accessible through our transparent and merit-based scholarship program.
