@@ -254,7 +254,7 @@ const Home = () => {
                 whileTap={{ scale: 0.95 }}
                 className="bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-xl hover:shadow-2xl"
               >
-                Register Now - It's Free!
+                Register Now
               </motion.button>
             </Link>
           </motion.div>
