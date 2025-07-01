@@ -69,7 +69,6 @@ const OrderSuccess = () => {
   }
 
   if (isLoading) {
-    console.log("in the loading of the ordere");
     return <Loading message="Verifying payment..." />;
   }
 

@@ -154,18 +154,6 @@ export const useCheckPaymentStatus = (orderId) => {
   });
 };
 
-export const useGrantTestToStudent = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ testId, userId, amount, method }) => 
-      testApi.grantTestToStudent(testId, userId, amount, method),
-    onSuccess: (data, { testId }) => {
-      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
-    },
-  });
-};
-
 export const useTestRankings = (testId, options = {}) => {
   return useQuery({
     queryKey: testKeys.rankings(testId),

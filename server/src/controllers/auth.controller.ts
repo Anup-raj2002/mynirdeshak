@@ -88,7 +88,6 @@ export const updateUserDetails = async (
     let values: any = await baseUserValidationSchema.partial().parseAsync(req.body);
 
     const photoFile = req.file;
-    console.log(`this is the profile photo ${photoFile}`);
     const oldUser = await User.findOne({ uid: req.user.uid }).lean();
     if (!oldUser) throw new AuthenticationError();
     if (photoFile) {
@@ -112,7 +111,7 @@ export const updateUserDetails = async (
     );
     
     if (!user) {
-      throw new AppError('User not found after update attempt.', 404, true);
+      throw new NotFoundError('User not found after update attempt.');
     }
     return res.status(200).json(cleanMongoData(user!));
   } catch (error) {

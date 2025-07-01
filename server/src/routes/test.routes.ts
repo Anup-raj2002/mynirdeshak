@@ -12,7 +12,6 @@ import {
   submitTestAttempt,
   getTestResult,
   getTestRankings,
-  grantTestToStudent,
   createOrder,
   orderComplete,
   PaymentHook,
@@ -37,7 +36,6 @@ testRouter.post('/:testId/attempt/submit', authorize(['student']), submitTestAtt
 testRouter.get('/:testId/result', authorize(['student']), getTestResult);
 
 testRouter.post('/', authorize(['instructor']), createTest);
-testRouter.post('/:testId/grant', authorize(['admin', 'test-manager']), grantTestToStudent);
 
 testRouter.use(authorize(['admin', 'test-manager', 'instructor']));
 testRouter.get('/:testId', getTestById);

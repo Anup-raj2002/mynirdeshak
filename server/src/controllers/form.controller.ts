@@ -49,7 +49,7 @@ export const submitRegistrationForm = async (req: Request, res: Response) => {
         errors: result.error.flatten(),
       });
     }
-    const validatedData = result.data;
+    const {acknowledgment, allDetailsCorrect, ...validatedData} = result.data;
 
     const scriptURL = config.registrationScriptUrl;
     const verificationCode = config.scriptVerificationCode;
@@ -59,7 +59,6 @@ export const submitRegistrationForm = async (req: Request, res: Response) => {
     }
 
     await axios.post(`${scriptURL}?verificationCode=${verificationCode}`, validatedData);
-
     return res.status(200).json({
       success: true,
       message: 'Registration submitted successfully'

@@ -64,16 +64,6 @@ export const checkPaymentStatus = async (orderId) => {
   return response.data;
 };
 
-
-export const grantTestToStudent = async (testId, userId, amount = 0, method = 'GRANT') => {
-  const response = await axiosInstance.post(`/tests/${testId}/grant`, {
-    userId,
-    amount,
-    method
-  });
-  return response.data;
-};
-
 export const getTestRankings = async (testId) => {
   const response = await axiosInstance.get(`/tests/${testId}/rankings`);
   return response.data;
