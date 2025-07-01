@@ -423,16 +423,16 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
         sameRankCount = 1;
       }
      
-      if (att.userId && (att.userId as any).uid) {
-        const firebaseUser = await auth.getUser((att.userId as any).uid);
-        if (firebaseUser.email) {
-          sendMail({
-            to: firebaseUser.email,
-            subject: `Your Rank for Test ${testId}`,
-            text: `Hi ${firebaseUser.displayName || ''},\n\nYour rank for the test is ${att.rank}. Your score: ${att.score}.\n\nThank you for participating!`,
-          });
-        }
-      }
+      // if (att.userId && (att.userId as any).uid) {
+      //   const firebaseUser = await auth.getUser((att.userId as any).uid);
+      //   if (firebaseUser.email) {
+      //     sendMail({
+      //       to: firebaseUser.email,
+      //       subject: `Your Rank for Test ${testId}`,
+      //       text: `Hi ${firebaseUser.displayName || ''},\n\nYour rank for the test is ${att.rank}. Your score: ${att.score}.\n\nThank you for participating!`,
+      //     });
+      //   }
+      // }
     }
     const ranking = attempts.map((att: any) => ({
       user: att.userId,
@@ -462,23 +462,20 @@ export const grantTestToStudent = async (req: AuthRequest, res: Response, next: 
 
 export const createOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { testId } = req.params;
     const mUser = await User.findOne({ uid: req.user?.uid }).lean();
     if (!mUser) throw new AuthenticationError();
     if (!mUser.contactNumber) throw new ConflictError('User does not have a phone number');
-    const test = await Test.findById(testId).lean();
-    if (!test) throw new NotFoundError('Test not exist');
     let orderPayload = {
       order_id: `order_${uuid()}`,
       order_currency: 'INR',
-      order_amount: Math.round((test.price || 0) * 100) / 100,
+      order_amount: config.price,
       customer_details: {
         customer_id: mUser._id.toString(),
         customer_phone: mUser.contactNumber,
       },
       order_meta: {
-        return_url: `${config.domainUrl}/order-success/${test._id.toString()}?order_id={order_id}`,
-        notify_url: `${config.domainUrl}/api/v1/tests/${test._id.toString()}/webhook`,
+        return_url: `${config.domainUrl}/order-success?order_id={order_id}`,
+        notify_url: `${config.domainUrl}/api/v1/tests/webhook`,
       }
     };
     const response = await CashFree.PGCreateOrder(orderPayload);

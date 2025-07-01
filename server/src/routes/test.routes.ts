@@ -22,7 +22,7 @@ import {
 
 const testRouter = Router();
 
-testRouter.post('/:testId/webhook', PaymentHook);
+testRouter.post('/webhook', PaymentHook);
 testRouter.get('/public', getPublicTest);
 testRouter.get('/public/:testId', getPublicTestById);
 
@@ -30,8 +30,8 @@ testRouter.use(authenticate);
 
 testRouter.get('/', getTests);
 
-testRouter.post('/:testId/order', authorize(['student']), createOrder);
-testRouter.get('/:testId/order', authorize(['student']), orderComplete);
+testRouter.post('/order', authorize(['student']), createOrder);
+testRouter.get('/order', authorize(['student']), orderComplete);
 testRouter.post('/:testId/attempt/start', authorize(['student']), startTestAttempt);
 testRouter.post('/:testId/attempt/submit', authorize(['student']), submitTestAttempt);
 testRouter.get('/:testId/result', authorize(['student']), getTestResult);

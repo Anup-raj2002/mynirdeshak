@@ -97,7 +97,7 @@ const UpcomingTests = () => {
       }
       
       try {
-        const purchaseResponse = await purchaseMutation.mutateAsync(test.id);
+        const purchaseResponse = await purchaseMutation.mutateAsync();
         const paymentSessionId = purchaseResponse.payment_session_id;
         await doPayment(paymentSessionId);
       } catch (error) {

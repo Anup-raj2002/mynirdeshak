@@ -70,7 +70,7 @@ const StudentDashboard = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        </div>
+              </div>
         {sidebarItems.map((item) => (
           <button
             key={item.key}
@@ -111,8 +111,8 @@ const StudentDashboard = () => {
               ) : (
                 <div className="text-gray-500">You are not registered for any tests.</div>
               )
-            )}
-          </div>
+                    )}
+                  </div>
         )}
 
         {activeSection === 'upcoming-exams' && (
@@ -128,8 +128,8 @@ const StudentDashboard = () => {
                       key={test.id}
                       test={test}
                     />
-                  ))}
-                </div>
+                ))}
+              </div>
               ) : (
                 <div className="text-gray-500">No upcoming exams found.</div>
               )
@@ -141,7 +141,7 @@ const StudentDashboard = () => {
           <div className="bg-white rounded-xl p-6 shadow">
             <h2 className="text-xl font-bold mb-4">Profile Settings</h2>
             <ProfileSettings />
-          </div>
+                  </div>
         )}
 
         {activeSection === 'account-settings' && (
