@@ -34,7 +34,7 @@ const About = () => {
             About My Nirdeshak
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Founded by Love Kumar Sharma, My Nirdeshak is dedicated to
+            Founded by Lav Kumar Sharma, My Nirdeshak is dedicated to
             empowering students with the financial support they need to pursue
             their educational dreams.
           </p>
