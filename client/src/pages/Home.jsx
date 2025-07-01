@@ -248,7 +248,7 @@ const Home = () => {
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               Join thousands of students who have already started their path to educational success with our scholarship program.
             </p>
-            <Link to="/register">
+            <Link to="/signup">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

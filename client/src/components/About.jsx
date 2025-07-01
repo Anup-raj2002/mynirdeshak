@@ -11,7 +11,7 @@ const About = () => {
     {
       icon: Heart,
       title: 'Our Vision',
-      description: 'Creating a world where financial constraints never limit a student\'s potential to achieve academic excellence.'
+      description: "Creating a world where financial constraints never limit a student's potential to achieve academic excellence."
     },
     {
       icon: Users,
@@ -40,60 +40,58 @@ const About = () => {
           </p>
         </div>
 
-        {/* Founder Section */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
-            <div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">
+        {/* Improved Founder Section */}
+        <div className="flex justify-center mb-16">
+          <div className="w-full md:w-3/4 lg:w-2/3 bg-gradient-to-br from-blue-50 to-white rounded-3xl shadow-xl p-8 md:p-12 border border-blue-100">
+            <div className="flex flex-col gap-4">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                 Meet Our Founder
               </h3>
-              <h4 className="text-2xl text-blue-600 font-semibold mb-6">
+              <span className="text-xl md:text-2xl font-semibold text-blue-700 mb-2">
                 Love Kumar Sharma
-              </h4>
-              <p className="text-gray-600 text-lg leading-relaxed mb-6">
+              </span>
+              <p className="text-gray-700 text-base md:text-lg leading-relaxed mb-6">
                 With a passion for education and a vision to make quality higher
-                education accessible to all deserving students, Love Kumar
-                Sharma founded My Nirdeshak. His belief that financial
-                constraints should never be a barrier to academic excellence
-                drives our mission forward.
+                education accessible to all deserving students, Love Kumar Sharma
+                established My Nirdeshak. His belief that financial constraints should
+                never be a barrier to academic excellence drives our mission forward.
               </p>
-              <div className="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-500">
-                <p className="text-blue-800 font-medium italic">
-                  "Every student deserves the chance to pursue their dreams.
-                  My Nirdeshak, we're not just providing scholarships
-                  – we're investing in the future leaders of tomorrow."
-                </p>
-              </div>
+              <blockquote className="border-l-4 border-blue-500 pl-4 italic text-blue-800 bg-blue-50 py-4 rounded-md">
+                "Every student deserves the chance to pursue their dreams.
+                At My Nirdeshak, we're not just providing scholarships –
+                we're investing in the future leaders of tomorrow."
+              </blockquote>
             </div>
           </div>
         </div>
 
         {/* Values Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {values.map((value, index) => {
-            const IconComponent = value.icon;
-            return (
-              <div
-                key={index}
-                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group"
-              >
-                <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-2xl w-fit mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <IconComponent className="h-8 w-8 text-blue-600" />
+        <div className="mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {values.map((value, index) => {
+              const IconComponent = value.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group flex flex-col items-center text-center"
+                >
+                  <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-2xl w-fit mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <IconComponent className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">
+                    {value.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {value.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  {value.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {value.description}
-                </p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Statistics Section */}
-        <div className="mt-20 bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl p-8 md:p-12 text-white">
+        <div className="mt-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-3xl p-8 md:p-12 text-white">
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-bold mb-4">
               Our Impact in Numbers
