@@ -97,7 +97,6 @@ const Registration = () => {
   const [triedNext, setTriedNext] = useState(false);
   const [fileErrors, setFileErrors] = useState({});
   const [hasLoaded, setHasLoaded] = useState(false);
-  const totalSteps = 7;
 
   // Load from localStorage on mount
   useEffect(() => {

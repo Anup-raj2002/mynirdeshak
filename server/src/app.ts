@@ -22,8 +22,8 @@ app.use(
   }),
 );
 app.use('/v1/tests/:testId/webhook', express.raw({ type: 'application/json' }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 app.use(loggerMiddleware());
 
 app.use('/v1', rateLimiter);
