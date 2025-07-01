@@ -7,6 +7,7 @@ import { config } from './config/variables.config';
 import { rateLimiter } from './services/rateLimiter.service';
 import authRouter from './routes/auth.routes';
 import testRouter from './routes/test.routes';
+import formRouter from './routes/form.routes';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -37,6 +38,7 @@ if (config.nodeEnv === 'development') {
 
 app.use('/v1/auth', authRouter);
 app.use('/v1/tests', testRouter);
+app.use('/v1/form', formRouter);
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404, true));

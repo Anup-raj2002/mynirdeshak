@@ -11,7 +11,7 @@ export const testKeys = {
   detail: (id) => [...testKeys.details(), id],
   rankings: (id) => [...testKeys.detail(id), 'rankings'],
   results: (id) => [...testKeys.detail(id), 'results'],
-  payment: (id, orderId) => [...testKeys.detail(id), orderId],
+  payment: (orderId) => ['payment', orderId],
 };
 
 export const useTests = (filters = {}, options = {}) => {
@@ -146,11 +146,11 @@ export const useCreateOrder = () => {
   });
 };
 
-export const useCheckPaymentStatus = (testId, orderId) => {  
+export const useCheckPaymentStatus = (orderId) => {  
   return useQuery({
-    queryKey: testKeys.payment(testId, orderId),
-    queryFn: () => testApi.checkPaymentStatus(testId, orderId),
-    enabled: !!testId && !!orderId,
+    queryKey: testKeys.payment(orderId),
+    queryFn: () => testApi.checkPaymentStatus(orderId),
+    enabled: !!orderId,
   });
 };
 

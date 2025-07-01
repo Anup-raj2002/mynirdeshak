@@ -11,6 +11,9 @@ const ConfigSchema = z.object({
     .string()
     .default('../assets'),
   PORT: z.coerce.number().int().positive().default(5000),
+  PRICE: z.coerce.number().int().positive().default(2500),
+  ID: z.string(),
+  PASS: z.string(),
   DOMAIN_URL: z.string().url().default('http://localhost:3000'),
   NODE_ENV: z
     .enum(['development', 'production'])
@@ -18,8 +21,9 @@ const ConfigSchema = z.object({
   CASHFREE_APP_ID: z.string(),
   CASHFREE_SECRET_KEY: z.string(),
   CASHFREE_API_VERSION: z.string().default('2022-09-01'),
-  GOOGLE_SCRIPT_URL: z.string().url(),
-  GOOGLE_SCRIPT_VERIFICATION_CODE: z.string(),
+  CONTACT_SCRIPT_URL: z.string().url(),
+  REGISTRATION_SCRIPT_URL: z.string().url(),
+  SCRIPT_VERIFICATION_CODE: z.string(),
 });
 
 const parsedConfig = ConfigSchema.safeParse(process.env);
@@ -39,9 +43,13 @@ export const config = {
   nodeEnv: parsedConfig.data.NODE_ENV,
   storagePath: parsedConfig.data.STORAGE_PATH,
   photoUploadPath: parsedConfig.data.STORAGE_PATH,
+  price: parsedConfig.data.PRICE,
+  userName: parsedConfig.data.ID,
+  pass: parsedConfig.data.PASS,
   cashfreeAppId: parsedConfig.data.CASHFREE_APP_ID,
   cashfreeSecretKey: parsedConfig.data.CASHFREE_SECRET_KEY,
   cashfreeApiVersion: parsedConfig.data.CASHFREE_API_VERSION,
-  googleScriptUrl: parsedConfig.data.GOOGLE_SCRIPT_URL,
-  googleScriptVerificationCode: parsedConfig.data.GOOGLE_SCRIPT_VERIFICATION_CODE,
+  contactScriptUrl: parsedConfig.data.CONTACT_SCRIPT_URL,
+  registrationScriptUrl: parsedConfig.data.REGISTRATION_SCRIPT_URL,
+  scriptVerificationCode: parsedConfig.data.SCRIPT_VERIFICATION_CODE,
 } as const;

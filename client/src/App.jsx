@@ -54,7 +54,7 @@ function App() {
                 <Route path="/dashboard/admin" element={<AdminDashboard />} />
                 <Route path="/dashboard/manager" element={<TestManagerDashboard />} />
                 <Route path="/dashboard/instructor" element={<InstructorDashboard />} />
-                <Route path="/order-success/:testId" element={<OrderSuccess />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/terms" element={<ErrorPage message='create terms and condition page' />} />
                 <Route path="/privacy" element={<ErrorPage message='create privacy policy'/>} />
                 <Route path="/refund" element={<ErrorPage message='create refund page' />} />

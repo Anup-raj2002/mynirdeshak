@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Eye, EyeOff } from 'lucide-react';
+import { Mail, Eye, EyeOff, Lock } from 'lucide-react';
 import { changeEmail, changePassword } from '../api/auth';
 import { useNotification } from '../contexts/NotificationContext';
 import { useUser } from '../contexts/UserContext';
@@ -244,9 +244,10 @@ function AccountSettings() {
             {/* Password Update Section */}
             <motion.div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 sm:mb-8" variants={itemVariants}>
               {/* Old Password */}
-              <div className="relative">
+              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">Old Password</label>
                 <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />
                   <motion.input
                     id="oldPassword"
                     name="oldPassword"
@@ -268,9 +269,10 @@ function AccountSettings() {
                 </div>
               </div>
               {/* New Password */}
-              <div className="relative">
+              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
                 <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />
                   <motion.input
                     id="newPassword"
                     name="newPassword"
@@ -292,9 +294,10 @@ function AccountSettings() {
                 </div>
               </div>
               {/* Confirm Password */}
-              <div className="sm:col-span-2 relative">
+              <div className="sm:col-span-2">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Confirm Password</label>
                 <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />
                   <motion.input
                     id="confirmPassword"
                     name="confirmPassword"

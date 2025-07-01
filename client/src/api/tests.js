@@ -54,13 +54,13 @@ export const getTestResult = async (testId) => {
 };
 
 
-export const createOrder = async (testId) => {
-  const response = await axiosInstance.post(`/tests/${testId}/order`);
+export const createOrder = async () => {
+  const response = await axiosInstance.post(`/tests/order`);
   return response.data;
 };
 
-export const checkPaymentStatus = async (testId, orderId) => {
-  const response = await axiosInstance.get(`/tests/${testId}/order?order_id=${orderId}`);
+export const checkPaymentStatus = async (orderId) => {
+  const response = await axiosInstance.get(`/tests/order?order_id=${orderId}`);
   return response.data;
 };
 
