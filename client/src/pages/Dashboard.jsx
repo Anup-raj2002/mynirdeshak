@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Settings, FileText, Menu, User as UserIcon } from 'lucide-react';
 import AccountSettings from "../components/AccountSettings";
 import ProfileSettings from "../components/ProfileSettings";
@@ -7,11 +7,23 @@ import { useTests } from '../queries/useTestsQueries';
 import StudentTestCard from '../components/StudentTestCard';
 import Loading from '../components/Loading';
 import ErrorPage from '../components/ErrorPage';
+import { useCheckPaymentStatus } from '../queries/useTestsQueries';
+import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
   const [activeSection, setActiveSection] = useState('my-tests');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { profile, loading: userLoading, error: userError } = useUser();
+  const navigate = useNavigate();
+
+  // Payment status check
+  const { data: paymentStatus, isLoading: paymentLoading, isError: paymentError } = useCheckPaymentStatus();
+
+  useEffect(() => {
+    if (!paymentLoading && (paymentError || paymentStatus?.message !== 'Payment successful')) {
+      navigate('/register');
+    }
+  }, [paymentLoading, paymentError, paymentStatus, navigate]);
 
   // Tests hooks
   const {

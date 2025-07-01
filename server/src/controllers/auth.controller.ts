@@ -111,7 +111,7 @@ export const updateUserDetails = async (
     );
     
     if (!user) {
-      throw new AppError('User not found after update attempt.', 404, true);
+      throw new NotFoundError('User not found after update attempt.');
     }
     return res.status(200).json(cleanMongoData(user!));
   } catch (error) {

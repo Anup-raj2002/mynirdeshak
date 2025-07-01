@@ -30,9 +30,7 @@ export const getTests = async (req: AuthRequest, res: Response, next: NextFuncti
     if (!user) throw new NotFoundError("User not found");
 
     if (role === UserRoles[0]) {
-      const payments = await TestPayment.find({ userId: user._id }).select('testId').lean();
-      const testIds = payments.map(p => p.testId);
-      query._id = { $in: testIds };
+      // No testId in TestPayment anymore, so skip filtering by test payments
     } else if (role === UserRoles[1]) {
       query.instructorId = user._id;
     }
@@ -474,36 +472,33 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
 export const orderComplete = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const order_id = req.query.order_id;
-    const testId = req.params.testId;
-    if (!order_id || !testId) throw new ConflictError('Missing order ID or test ID');
     const mUser = await User.findOne({ uid: req.user?.uid }).select('_id').lean();
     if (!mUser) throw new AuthenticationError();
-    const existingPaymentRecord = await TestPayment.exists({ orderId: order_id });
+    const existingPaymentRecord = await TestPayment.findOne({
+      $or: [
+        { userId: mUser._id },
+        { orderId: order_id }
+      ]
+    });
     if (existingPaymentRecord) {
       res.status(200).json({ message: 'Payment successful' });
       return;
     }
-    const alreadyRegistered = await TestPayment.exists({
-      testId: testId,
-      userId: mUser._id
-    });
-    if (alreadyRegistered) {
-      res.status(200).json({ message: 'Payment already processed for this test' });
+    if (order_id) {
+      const orderDetails = (await CashFree.PGOrderFetchPayments(order_id.toString())).data;
+      const successfulPayment = orderDetails.find(payment => payment.payment_status === 'SUCCESS');
+      if (!successfulPayment) throw new NotFoundError('No successful payment found');
+      await TestPayment.create({
+        userId: mUser._id,
+        amount: successfulPayment.payment_amount,
+        method: 'ONLINE',
+        paymentId: successfulPayment.cf_payment_id,
+        orderId: order_id,
+      });
+      res.status(200).json({ message: 'Payment successful' });
       return;
     }
-    const orderDetails = (await CashFree.PGOrderFetchPayments(order_id.toString())).data;
-    const successfulPayment = orderDetails.find(payment => payment.payment_status === 'SUCCESS');
-    if (!successfulPayment) throw new NotFoundError('No successful payment found');
-    await TestPayment.create({
-      userId: mUser._id,
-      testId: testId,
-      amount: successfulPayment.payment_amount,
-      method: 'ONLINE',
-      paymentId: successfulPayment.cf_payment_id,
-      orderId: order_id,
-    });
-    await Test.findByIdAndUpdate(testId, { $inc: { registration: 1 } });
-    res.status(200).json({ message: 'Payment successful' });
+    throw new NotFoundError('No payment found');
   } catch (err) {
     next(err);
   }
