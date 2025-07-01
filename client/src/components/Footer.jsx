@@ -153,7 +153,7 @@ const Footer = () => {
                 © {currentYear} My nirdeshak. All rights reserved.
               </p>
               <p className="text-gray-400 text-sm mt-1">
-                Founded by Love Kumar Sharma | Empowering Education Since 2024
+                Founded by Love Kumar Sharma | Designed and developed by Digimoga Re-innovations.
               </p>
             </motion.div>
             
