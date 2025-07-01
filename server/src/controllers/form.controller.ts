@@ -59,7 +59,6 @@ export const submitRegistrationForm = async (req: Request, res: Response) => {
     }
 
     await axios.post(`${scriptURL}?verificationCode=${verificationCode}`, validatedData);
-    console.log(`data is ${JSON.stringify(validatedData)}`);
     return res.status(200).json({
       success: true,
       message: 'Registration submitted successfully'

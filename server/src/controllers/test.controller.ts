@@ -446,20 +446,6 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
   }
 };
 
-export const grantTestToStudent = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { testId, userId, amount = 0, method = 'GRANT' } = req.body;
-    if (!testId || !userId) throw new ConflictError('testId and userId are required');
-    const existingGrant = await TestPayment.exists({ testId, userId });
-    if (existingGrant) throw new ConflictError('Grant already exists for this test and user');
-    const details = await TestPayment.create({ testId, userId, amount, method });
-    await Test.findByIdAndUpdate(testId, { $inc: { registration: 1 } });
-    res.status(201).json(cleanMongoData(details.toJSON()));
-  } catch (err) {
-    next(err);
-  }
-};
-
 export const createOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const mUser = await User.findOne({ uid: req.user?.uid }).lean();

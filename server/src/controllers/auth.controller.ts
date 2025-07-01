@@ -88,7 +88,6 @@ export const updateUserDetails = async (
     let values: any = await baseUserValidationSchema.partial().parseAsync(req.body);
 
     const photoFile = req.file;
-    console.log(`this is the profile photo ${photoFile}`);
     const oldUser = await User.findOne({ uid: req.user.uid }).lean();
     if (!oldUser) throw new AuthenticationError();
     if (photoFile) {

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import User from "../components/User.jsx";
 import { useUser } from "../contexts/UserContext.jsx";
 import UserManagement from "../components/UserManagement.jsx";
-import GrantOfflineTest from "../components/GrantOfflineTest.jsx";
 import MyTests from "../components/MyTests.jsx";
 import ProfileSettings from "../components/ProfileSettings.jsx";
 import AccountSettings from "../components/AccountSettings.jsx";
@@ -21,7 +20,6 @@ function CourseManagerDashboard() {
   const sidebarItems = [
     { label: "View All Tests", icon: BookOpen, key: "viewTests" },
     { label: "Profile", icon: UserIcon, key: "profile" },
-    { label: "Grant Offline Tests", icon: FileText, key: "grantTests" },
     { label: "Add User", icon: UserIcon, key: "addUser" },
     { label: "User Management", icon: Settings, key: "userManagement" },
     { label: "Settings", icon: Settings, key: "Settings" },
@@ -48,7 +46,6 @@ function CourseManagerDashboard() {
         <div className="bg-white rounded-xl p-6 shadow">
           {activeTab === "viewTests" && <MyTests />}
           {activeTab === "profile" && <ProfileSettings />}
-          {activeTab === "grantTests" && <GrantOfflineTest />}
           {activeTab === "addUser" && (
             <div className="bg-white rounded-lg shadow p-3 w-full flex flex-col">
               <User />
