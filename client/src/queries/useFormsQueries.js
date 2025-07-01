@@ -1,10 +1,14 @@
-import { useMutation } from 'react-query';
+import { useMutation } from '@tanstack/react-query';
 import { submitRegistration, submitContactUs } from '../api/forms';
 
-export function useSubmitRegistration(options) {
-  return useMutation(submitRegistration, options);
+export function useSubmitRegistration() {
+  return useMutation({
+    mutationFn: submitRegistration,
+  });
 }
 
-export function useSubmitContactUs(options) {
-  return useMutation(submitContactUs, options);
+export function useSubmitContactUs() {
+  return useMutation({
+    mutationFn: submitContactUs,
+  });
 } 

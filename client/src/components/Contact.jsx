@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send, MessageCircle } from 'lucide-react';
+import { useSubmitContactUs } from '../queries/useFormsQueries';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Contact = () => {
+  const submitForm = useSubmitContactUs();
+  const { showNotification } = useNotification();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,9 +23,18 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Contact form submitted:', formData);
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    submitForm.mutate(formData, {
+      onSuccess: () => {
+        showNotification('Thank you for your message! We will get back to you soon.', 'success');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      },
+      onError: (err) => {
+        showNotification(
+          err?.response?.data?.message || err?.message || 'Failed to send message. Please try again later.',
+          'error'
+        );
+      }
+    });
   };
 
   const contactInfo = [

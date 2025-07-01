@@ -1,10 +1,12 @@
 import React from "react";
-import { useSearchParams, useParams, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { CheckCircle, XCircle } from "lucide-react";
-import { useCheckPaymentStatus, useSubmitRegistration } from "../queries/useTestsQueries";
+import { useCheckPaymentStatus } from "../queries/useTestsQueries";
+import { useSubmitRegistration } from "../queries/useFormsQueries";
 import Loading from "../components/Loading";
 import ErrorPage from "../components/ErrorPage";
 import { motion } from "framer-motion";
+import { useNotification } from "../contexts/NotificationContext";
 
 const REGISTRATION_DATA_KEY = "registrationFormData";
 const REGISTRATION_STEP_KEY = "registrationFormStep";
@@ -16,7 +18,7 @@ const OrderSuccess = () => {
   const submitRegistration = useSubmitRegistration();
   const [hasSubmitted, setHasSubmitted] = React.useState(false);
   const [submitError, setSubmitError] = React.useState(null);
-
+  const { showNotification } = useNotification();
   const {
     isLoading,
     isError,
@@ -25,13 +27,12 @@ const OrderSuccess = () => {
 
   React.useEffect(() => {
     if (!orderId) return;
-    // Prevent duplicate submission for same orderId
     const alreadySubmittedOrderId = localStorage.getItem(REGISTRATION_SUBMITTED_KEY);
     if (alreadySubmittedOrderId === orderId) {
+      showNotification("You have already submitted this registration.", "info");
       setHasSubmitted(true);
       return;
     }
-    // Check for registration data
     const regData = localStorage.getItem(REGISTRATION_DATA_KEY);
     if (!regData) return;
     let parsed;
@@ -40,20 +41,19 @@ const OrderSuccess = () => {
     } catch {
       return;
     }
-    // Submit registration data with orderId
-    submitRegistration.mutate(
-      { ...parsed, orderId },
+    submitRegistration.mutate(parsed,
       {
         onSuccess: () => {
           localStorage.removeItem(REGISTRATION_DATA_KEY);
           localStorage.removeItem(REGISTRATION_STEP_KEY);
           localStorage.setItem(REGISTRATION_SUBMITTED_KEY, orderId);
           setHasSubmitted(true);
+          showNotification("Registration submitted successfully!", "success");
         },
         onError: (err) => {
-          setSubmitError(
-            err?.response?.data?.message || err?.message || "Failed to submit registration. Please contact support."
-          );
+          const msg = err?.response?.data?.message || err?.message || "Failed to submit registration. Please contact support.";
+          setSubmitError(msg);
+          showNotification(msg, "error");
         },
       }
     );
@@ -95,7 +95,6 @@ const OrderSuccess = () => {
     );
   }
 
-  // Show thank you if registration submitted or already submitted
   if (hasSubmitted || localStorage.getItem(REGISTRATION_SUBMITTED_KEY) === orderId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">

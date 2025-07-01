@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { submitContactForm } from '../controllers/contact.controller';
+import { submitContactForm, submitRegistrationForm } from '../controllers/form.controller';
 
 const formRouter = Router();
 
 formRouter.post('/contact', submitContactForm);
-formRouter.post('/registration', submitContactForm);
+formRouter.post('/registration', submitRegistrationForm);
 
 export default formRouter; 
