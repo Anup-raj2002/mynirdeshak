@@ -31,10 +31,10 @@ const About = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            About Track Your Way
+            About My Nirdeshak
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Founded by Love Kumar Sharma, Track Your Way is dedicated to
+            Founded by Love Kumar Sharma, My Nirdeshak is dedicated to
             empowering students with the financial support they need to pursue
             their educational dreams.
           </p>
@@ -61,14 +61,14 @@ const About = () => {
               <p className="text-gray-600 text-lg leading-relaxed mb-6">
                 With a passion for education and a vision to make quality higher
                 education accessible to all deserving students, Love Kumar
-                Sharma founded Track Your Way. His belief that financial
+                Sharma founded My Nirdeshak. His belief that financial
                 constraints should never be a barrier to academic excellence
                 drives our mission forward.
               </p>
               <div className="bg-blue-50 p-6 rounded-xl border-l-4 border-blue-500">
                 <p className="text-blue-800 font-medium italic">
                   "Every student deserves the chance to pursue their dreams.
-                  Through Track Your Way, we're not just providing scholarships
+                  My Nirdeshak, we're not just providing scholarships
                   – we're investing in the future leaders of tomorrow."
                 </p>
               </div>
@@ -120,11 +120,11 @@ const About = () => {
               <div className="text-blue-200">Scholarships Awarded</div>
             </div>
             <div>
-              <div className="text-4xl md:text-5xl font-bold mb-2">₹50L+</div>
-              <div className="text-blue-200">Total Amount Distributed</div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">₹2cr+</div>
+              <div className="text-blue-200">Aim To Distribute</div>
             </div>
             <div>
-              <div className="text-4xl md:text-5xl font-bold mb-2">98%</div>
+              <div className="text-4xl md:text-5xl font-bold mb-2">100%</div>
               <div className="text-blue-200">Student Satisfaction</div>
             </div>
           </div>

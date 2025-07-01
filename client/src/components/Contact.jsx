@@ -35,18 +35,18 @@ const Contact = () => {
       icon: Phone,
       title: 'Call Us',
       details: '+91 12345 67890',
-      subtitle: 'Mon-Fri 9AM-6PM IST'
+      subtitle: 'Mon-Fri 10AM-5PM IST'
     },
     {
       icon: MapPin,
       title: 'Visit Us',
-      details: 'New Delhi, India',
+      details: 'Knowledge Park III,Greater Noida UP',
       subtitle: 'By appointment only'
     },
     {
       icon: Clock,
       title: 'Support Hours',
-      details: '9:00 AM - 6:00 PM',
+      details: '10:00 AM - 5:00 PM',
       subtitle: 'Monday to Friday'
     }
   ];

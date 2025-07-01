@@ -98,7 +98,7 @@ const Footer = () => {
                   className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors duration-200"
                 >
                   <MapPin className="h-5 w-5 text-blue-400" />
-                  <span>New Delhi, India</span>
+                  <span>Knowledge Park III,Greater Noida UP</span>
                 </motion.div>
               </div>
             </motion.div>

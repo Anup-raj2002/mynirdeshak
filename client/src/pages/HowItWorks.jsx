@@ -26,19 +26,20 @@ const HowItWorks = () => {
       duration: '2 hours'
     },
     {
-      icon: GraduationCap,
-      title: 'Get Admission',
-      description: 'Secure admission in a recognized college or university for your chosen field of study.',
-      color: 'from-orange-500 to-orange-600',
-      duration: 'Varies'
-    },
-    {
       icon: Award,
       title: 'Receive Ranking',
       description: 'Get ranked based on your exam performance, academic records, and overall profile assessment.',
       color: 'from-red-500 to-red-600',
       duration: '1 week'
     },
+    {
+      icon: GraduationCap,
+      title: 'Get Admission',
+      description: 'Secure admission in a recognized college or university for your chosen field of study.',
+      color: 'from-orange-500 to-orange-600',
+      duration: 'Varies'
+    },
+    
     {
       icon: CreditCard,
       title: 'Get Scholarship',
