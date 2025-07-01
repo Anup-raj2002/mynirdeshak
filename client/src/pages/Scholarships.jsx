@@ -314,7 +314,7 @@ const Scholarships = () => {
               viewport={{ once: true }}
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6 text-yellow-300"
             >
-              ₹2cr+ Lakhs
+              ₹2cr+
             </motion.div>
             <p className="text-base sm:text-lg md:text-xl text-blue-100 mb-8 md:mb-12 max-w-3xl mx-auto px-4">
               Every year, we aim to distribute over 2 crores in scholarships to deserving students, making higher
