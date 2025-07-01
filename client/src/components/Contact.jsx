@@ -34,7 +34,7 @@ const Contact = () => {
     {
       icon: Phone,
       title: 'Call Us',
-      details: '+91 12345 67890',
+      details: '+91 7078899711',
       subtitle: 'Mon-Fri 10AM-5PM IST'
     },
     {
@@ -192,42 +192,6 @@ const Contact = () => {
                   </div>
                 );
               })}
-            </div>
-
-            {/* FAQ Section */}
-            <div className="bg-gray-50 rounded-2xl p-8">
-              <h4 className="text-xl font-bold text-gray-900 mb-6">
-                Frequently Asked Questions
-              </h4>
-              <div className="space-y-4">
-                <div>
-                  <h5 className="font-semibold text-gray-900 mb-2">
-                    When is the registration deadline?
-                  </h5>
-                  <p className="text-gray-600 text-sm">
-                    Registration is open year-round. However, exam dates are announced 
-                    quarterly with specific registration cutoffs.
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-semibold text-gray-900 mb-2">
-                    What documents do I need?
-                  </h5>
-                  <p className="text-gray-600 text-sm">
-                    You'll need your 12th grade certificate, mark sheet, ID proof, 
-                    and college admission letter (after securing admission).
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-semibold text-gray-900 mb-2">
-                    How is the scholarship amount disbursed?
-                  </h5>
-                  <p className="text-gray-600 text-sm">
-                    Scholarships are directly paid to your college for fee purposes 
-                    after verification of admission.
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

@@ -109,7 +109,6 @@ const Scholarships = () => {
               transition={{ delay: 0.3, duration: 0.8 }}
               className="text-4xl font-bold text-center text-gray-900 mb-12"
             >
-              Top Performers
             </motion.h2>
             
             <div className="flex flex-col lg:flex-row items-end justify-center gap-8 max-w-5xl mx-auto">

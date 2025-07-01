@@ -43,14 +43,7 @@ const About = () => {
         {/* Founder Section */}
         <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <img
-                src="../../public/assets/Lav.jpg"
-                alt="Founder"
-                className="w-full max-w-md mx-auto rounded-2xl shadow-lg"
-                style={{ height: "350px" }} 
-              />
-            </div>
+            
             <div>
               <h3 className="text-3xl font-bold text-gray-900 mb-4">
                 Meet Our Founder
