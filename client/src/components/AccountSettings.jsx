@@ -246,6 +246,7 @@ function AccountSettings() {
               {/* Old Password */}
               <div className="relative">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Old Password</label>
+                
                 <div className="relative">
                   <motion.input
                     id="oldPassword"
@@ -270,6 +271,7 @@ function AccountSettings() {
               {/* New Password */}
               <div className="relative">
                 <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
+                
                 <div className="relative">
                   <motion.input
                     id="newPassword"
@@ -294,6 +296,7 @@ function AccountSettings() {
               {/* Confirm Password */}
               <div className="sm:col-span-2 relative">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Confirm Password</label>
+                
                 <div className="relative">
                   <motion.input
                     id="confirmPassword"
