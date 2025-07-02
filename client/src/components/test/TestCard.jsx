@@ -1,49 +1,47 @@
 import React from "react";
-import { Clock, Users, Trash2, Calendar, Edit } from "lucide-react";
+import { Edit, Trash2, CalendarClock } from "lucide-react";
 import PublishTestButton from "./PublishTestButton";
+import { SECTION_ORDER } from "../../utils/sectionConfig";
 
 const TestCard = ({ test, onSelect, onDelete }) => {
-  const isPast = new Date(test.endDateTime) < new Date();
+  const sectionMap = {};
+  (test.sections || []).forEach((sec) => {
+    sectionMap[sec.name] = sec;
+  });
+  const sectionDisplay = SECTION_ORDER.map(
+    (sec) => String((sectionMap[sec]?.questions?.length || 0)).padStart(2, "0")
+  ).join(" | ");
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDateIST = (dateString) => {
+    return new Date(dateString).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      hour12: true,
     });
   };
 
   return (
-    <div
-      className={`bg-white rounded-xl shadow-md border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-        isPast ? "opacity-60 bg-gray-50" : ""
-      }`}
-    >
+    <div className="bg-white rounded-xl shadow-md border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-xl font-bold text-gray-800">{test.name}</h3>
+          <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+            <h3 className="text-xl font-bold text-gray-800">{test.stream}</h3>
+            <CalendarClock size={14} className="ms-2 inline-block" />
+            {formatDateIST(test.startDateTime)}
+          </div>
           <p className="text-sm text-gray-500 mt-1">{test.description}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-            <PublishTestButton test={test} />
+          <PublishTestButton test={test} />
         </div>
       </div>
       <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
-          <div className="flex items-center gap-1.5" title="Registrations">
-            <Users size={16} />
-            <span>{test.registration || 0} Registered</span>
-          </div>
-          <div className="flex items-center gap-1.5" title="Start Date">
-            <Calendar size={16} />
-            <span>{formatDate(test.startDateTime)}</span>
-          </div>
-          <div className="flex items-center gap-1.5" title="End Date">
-            <Clock size={16} />
-            <span>{formatDate(test.endDateTime)}</span>
-          </div>
+        <div className="flex flex-col gap-1 text-sm text-gray-600 min-w-[180px]">
+          <div className="font-semibold text-blue-700 tracking-wider">{sectionDisplay}</div>
         </div>
         <div className="flex items-center gap-2 mt-2 sm:mt-0">
           <button

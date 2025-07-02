@@ -9,6 +9,7 @@ import Loading from "../../components/ui/Loading";
 import ErrorPage from "../../components/ui/ErrorPage";
 import { Settings, FileText, User as UserIcon, UserPlusIcon, BookOpen, Menu, UsersIcon } from 'lucide-react';
 import GrantStudent from "../../components/test/GrantTest";
+import SessionManager from '../../components/test/SessionManager';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("viewTests");
@@ -26,6 +27,7 @@ const AdminDashboard = () => {
     { label: "Profile", icon: UserIcon, key: "profile" },
     { label: "Settings", icon: Settings, key: "Settings" },
     { label: "Grant Student", icon: FileText, key: "grantStudent" },
+    { label: "Session Management", icon: FileText, key: "sessionManager" },
   ];
 
   const handleTabChange = (key) => {
@@ -95,6 +97,7 @@ const AdminDashboard = () => {
           {activeTab === "userManagement" && <UserManagement />}
           {activeTab === "Settings" && <AccountSettings />}
           {activeTab === "grantStudent" && <GrantStudent />}
+          {activeTab === "sessionManager" && <SessionManager />}
         </div>
       </main>
     </div>

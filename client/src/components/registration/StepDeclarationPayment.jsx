@@ -17,7 +17,7 @@ export default function StepDeclarationPayment({ formData, onChange }) {
         <div className="space-y-4 text-sm text-gray-700">
           <p>1. All information provided must be true and correct to the best of your knowledge.</p>
           <p>2. Any false information may lead to disqualification.</p>
-          <p>3. Please read the full rules and guidelines on our <a href="/terms" target="_blank" className="text-blue-600 underline">Rules & Guidelines</a> page.</p>
+          <p>3. Please read the full rules and guidelines on our <a href="/rules" target="_blank" className="text-blue-600 underline">Rules & Guidelines</a> page.</p>
           <p>4. By submitting, you agree to our terms and privacy policy.</p>
         </div>
       </div>
@@ -29,7 +29,7 @@ export default function StepDeclarationPayment({ formData, onChange }) {
         <input type="checkbox" name="acknowledgment" checked={formData.acknowledgment} onChange={onChange} className="mt-1 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" required />
         <span className="text-sm text-gray-700 leading-relaxed">I have read and agree to the rules, guidelines, and privacy policy.</span>
       </div>
-      <button type="button" disabled className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 opacity-50 cursor-not-allowed">Pay Registration Fee</button>
+      <button type="button" className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 opacity-50 cursor-not-allowed">Pay Registration Fee</button>
     </motion.div>
   );
-} 
+} //TODO: payment button working

@@ -1,7 +1,6 @@
 import {z} from 'zod';
 
 export const questionValidationSchema = z.object({
-    testId: z.string(),
     question: z.string().min(1, 'Question is required'),
     options: z.array(z.string().min(1)).min(2, 'At least two options are required'),
     correctAnswer: z.number().int(),

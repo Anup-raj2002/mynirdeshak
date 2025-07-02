@@ -15,20 +15,19 @@ import {
   createOrder,
   orderComplete,
   PaymentHook,
-  getPublicTest,
-  getPublicTestById,
   grantStudent,
+  getExamSessions,
+  createExamSession,
 } from '../controllers/test.controller';
 
 const testRouter = Router();
 
 testRouter.post('/webhook', PaymentHook);
-testRouter.get('/public', getPublicTest);
-testRouter.get('/public/:testId', getPublicTestById);
 
 testRouter.use(authenticate);
 
 testRouter.get('/', getTests);
+testRouter.get('/sessions', getExamSessions);
 
 testRouter.post('/order', authorize(['student']), createOrder);
 testRouter.get('/order', authorize(['student']), orderComplete);
@@ -38,6 +37,7 @@ testRouter.get('/:testId/result', authorize(['student']), getTestResult);
 
 testRouter.post('/', authorize(['instructor']), createTest);
 testRouter.post('/grant', authorize(['admin', 'test-manager']), grantStudent);
+testRouter.post('/sessions', authorize(['admin', 'test-manager']), createExamSession);
 
 testRouter.use(authorize(['admin', 'test-manager', 'instructor']));
 testRouter.get('/:testId', getTestById);

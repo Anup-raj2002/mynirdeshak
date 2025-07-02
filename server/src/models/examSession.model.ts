@@ -8,6 +8,12 @@ export interface IExamSession extends Document {
 const examSessionSchema = new Schema<IExamSession>({
   year: { type: String, required: true, unique: true },
   commonName: { type: String, required: true },
-});
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  });
+
+examSessionSchema.index({createdAt: -1});
 
 export const ExamSession = mongoose.model<IExamSession>('ExamSession', examSessionSchema); 
