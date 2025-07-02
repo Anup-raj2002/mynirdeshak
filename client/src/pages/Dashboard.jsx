@@ -25,7 +25,6 @@ const StudentDashboard = () => {
     }
   }, [paymentLoading, paymentError, paymentStatus, navigate]);
 
-  // Tests hooks
   const {
     data: registeredTests,
     isLoading: registeredLoading,
@@ -37,7 +36,6 @@ const StudentDashboard = () => {
     error: upcomingError,
   } = useTests({ upcoming: true });
 
-  // Filter only future tests for upcoming exams
   const now = new Date();
   const filteredUpcomingTests = (upcomingTests || []).filter(
     (test) => new Date(test.endDateTime) > now
@@ -50,7 +48,7 @@ const StudentDashboard = () => {
     { label: 'Account Settings', icon: Settings, key: 'account-settings' },
   ];
 
-  if (userLoading) return <Loading />;
+  if (userLoading || paymentLoading) return <Loading />;
   if (userError) return <ErrorPage message={userError.message || 'User not found.'} />;
   if (!profile) return <ErrorPage message="User not found." />;
 

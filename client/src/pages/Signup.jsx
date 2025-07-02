@@ -81,7 +81,7 @@ const Signup = () => {
     if (!isStepValid) return;
     setIsLoading(true);
     try {
-      await signupWithEmail(formData.email, formData.password);
+      await signupWithEmail(formData.email, formData.password, formData);
       await logout();
       queryClient.removeQueries();
       navigate('/login', { replace: true });

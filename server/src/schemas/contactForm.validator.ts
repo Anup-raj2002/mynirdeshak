@@ -7,4 +7,4 @@ export const contactFormValidationSchema = z.object({
   email: z.string().regex(emailRegex, 'Enter a valid email address'),
   subject: z.string().min(1, 'Subject is required'),
   message: z.string().min(1, 'Message is required'),
-});
+}).strip();

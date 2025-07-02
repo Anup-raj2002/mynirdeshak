@@ -51,7 +51,7 @@ export const getErrorMessage = (error) => {
   }
 };
 
-export const signupWithEmail = async (email, password) => {
+export const signupWithEmail = async (email, password, extraData) => {
   try {
     const signInMethods = await fetchSignInMethodsForEmail(auth, email);
     if (signInMethods.length > 0) {
@@ -60,8 +60,7 @@ export const signupWithEmail = async (email, password) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     await sendEmailVerification(user);
-    await registerUser(user.uid);
-
+    await registerUser(extraData);
     return user;
   } catch (error) {
     throw new Error(getErrorMessage(error));

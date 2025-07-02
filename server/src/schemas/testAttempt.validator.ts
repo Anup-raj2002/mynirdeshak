@@ -6,7 +6,7 @@ export const testAttemptValidationSchema = z.object({
       selectedOption: z.number().int().min(0),
       optionMap: z.array(z.number().int()).min(4, 'Option map is required and must have options'),
     })).min(1, 'At least one answer is required'),
-  });
+  }).strip();
   
   export type TestAttemptInput = z.infer<typeof testAttemptValidationSchema>;
   

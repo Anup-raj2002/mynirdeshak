@@ -13,7 +13,7 @@ import fs from 'fs';
 import path from 'path';
 import { config } from '../config/variables.config';
 import { User } from '../models/user.model';
-import { createStudentValidationSchema, createUserValidationSchema, CreateUserInput, UserRoles, deleteStudentValidationSchema, DeleteStudent } from '../schemas/user.validator';
+import { createStudentValidationSchema, createUserValidationSchema, CreateUserInput, UserRoles, deleteUserValidationSchema, DeleteStudent, registerStudentValidationSchema } from '../schemas/user.validator';
 import { baseUserValidationSchema } from '../schemas/user.validator';
 
 export const newStudent = async (
@@ -35,14 +35,14 @@ export const newStudent = async (
       throw new ConflictError('User already registered');
     }
 
-    const validated = await createStudentValidationSchema.parseAsync(req.body);
+    const validated = await registerStudentValidationSchema.parseAsync(req.body);
 
     await User.create({
       uid: req.user.uid,
       ...validated,
       role: UserRoles[0],
     });
-    res.status(201).json({ message: 'Student role assigned and created' });
+    res.status(201).json({ message: 'Student role created' });
   } catch (err) {
     next(err);
   }
@@ -261,7 +261,7 @@ export const deleteUser = async (
   next: NextFunction
 ) => {
   try {
-    const details: DeleteStudent = await deleteStudentValidationSchema.parseAsync(req.body);
+    const details: DeleteStudent = await deleteUserValidationSchema.parseAsync(req.body);
     const userToDelete = await auth.getUser(details.profileUID);
     const userRole = userToDelete.customClaims?.role;
 
@@ -277,12 +277,15 @@ export const deleteUser = async (
 
     const mongoUserToDelete = await User.findOne({ uid: details.profileUID });
 
-    if (!mongoUserToDelete) {
-      await auth.deleteUser(details.profileUID);
-      return res.status(204).send();
+    if (mongoUserToDelete) {
+      await mongoUserToDelete.deleteOne();
     }
 
-    await mongoUserToDelete.deleteOne();
+    try {
+      await auth.deleteUser(details.profileUID);
+    } catch (firebaseError: any) {
+      console.log(firebaseError);
+    }
 
     return res.status(204).send();
   } catch (error) {

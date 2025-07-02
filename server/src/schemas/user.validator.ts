@@ -10,11 +10,7 @@ export const baseUserValidationSchema = z.object({
   photoUrl: z.string().optional(),
   contactNumber: z.string()
   .regex(/^(\+91|0)?[6-9]\d{9}$/, 'Invalid phone number format').optional(),
-  dob: z.string().optional(),
-  fatherName: z.string().optional(),
-  motherName: z.string().optional(),
-  altPhone: z.string().optional(),
-});
+}).strip();
 
 export const createUserValidationSchema = baseUserValidationSchema.extend({
   email: z.string().email('Invalid email address'),
@@ -23,24 +19,35 @@ export const createUserValidationSchema = baseUserValidationSchema.extend({
     required_error: 'Role is required',
     invalid_type_error: 'Invalid role',
   }),
-});
+}).strip();
 
 const studentDetailsValidationSchema = z.object({
-  dob: z.string().min(1, 'Date of birth is required'),
+  dob: z.string()
+    .min(1, 'Date of birth is required')
+    .refine(
+      (val) => /^\d{4}-\d{2}-\d{2}$/.test(val) && !isNaN(Date.parse(val)),
+      { message: 'Date of birth must be a valid date in YYYY-MM-DD format' }
+    ),
   fatherName: z.string().min(1, 'Father name is required'),
   motherName: z.string().min(1, 'Mother name is required'),
-  altPhone: z.string().min(1, 'Alternative phone is required'),
-});
+  altPhone: z.string()
+    .min(0)
+    .refine(
+      (val) => val === '' || /^(\+91|0)?[6-9]\d{9}$/.test(val),
+      { message: 'Alternative phone must be a valid phone number or blank' }
+    ),
+}).strip();
 
-export const createStudentValidationSchema = createUserValidationSchema.merge(studentDetailsValidationSchema);
+export const registerStudentValidationSchema = baseUserValidationSchema.merge(studentDetailsValidationSchema).strip();
+export const createStudentValidationSchema = createUserValidationSchema.merge(studentDetailsValidationSchema).strip();
 
-export const deleteStudentValidationSchema = z.object({
+export const deleteUserValidationSchema = z.object({
   profileUID: z.string().min(1, 'Profile UID is required'),
-});
+}).strip();
 
 type CreateUser = z.infer<typeof createUserValidationSchema>;
 type CreateStudent = z.infer<typeof createStudentValidationSchema>;
 
 export type CreateUserInput = CreateUser | CreateStudent;
 export type BaseUser = z.infer<typeof baseUserValidationSchema>;
-export type DeleteStudent = z.infer<typeof deleteStudentValidationSchema>;
+export type DeleteStudent = z.infer<typeof deleteUserValidationSchema>;

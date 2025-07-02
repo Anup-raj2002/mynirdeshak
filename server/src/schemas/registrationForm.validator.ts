@@ -57,7 +57,7 @@ export const registrationFormValidationSchema = z.object({
   // Step 7: Declaration
   allDetailsCorrect: z.boolean().refine(val => val, { message: 'You must confirm details are correct' }),
   acknowledgment: z.boolean().refine(val => val, { message: 'You must acknowledge the rules' }),
-});
+}).strip();
 
 export const fullRegistrationFormValidationSchema = registrationFormValidationSchema.superRefine((data, ctx) => {
   if (data.classPassed === '12' && !data.marksheet12Photo) {

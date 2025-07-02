@@ -177,10 +177,16 @@ function UserManagement() {
                     <span className="ml-1">{u.contactNumber}</span>
                   </div>
                   {u.role === "student" && (
+                    <>
                       <div>
-                        <span className="font-semibold">School Name:</span>
-                        <span className="ml-1">{u.school}</span>
+                        <span className="font-semibold">Father's Name:</span>
+                        <span className="ml-1">{u.fatherName}</span>
                       </div>
+                      <div>
+                        <span className="font-semibold">Mother's Name:</span>
+                        <span className="ml-1">{u.motherName}</span>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>

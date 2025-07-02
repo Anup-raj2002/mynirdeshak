@@ -15,6 +15,6 @@ export const testValidationSchema = z.object({
   startDateTime: z.preprocess((val) => (typeof val === 'string' ? new Date(val) : val), z.date()),
   endDateTime: z.preprocess((val) => (typeof val === 'string' ? new Date(val) : val), z.date()),
   registrationEndDateTime: z.preprocess((val) => (typeof val === 'string' ? new Date(val) : val), z.date()),
-});
+}).strip();
 
 export type TestInput = z.infer<typeof testValidationSchema>; 
