@@ -21,6 +21,8 @@ import AdminDashboard from './pages/dashboards/AdminDashboard';
 import TestManagerDashboard from './pages/dashboards/TestManagerDashboard';
 import InstructorDashboard from './pages/dashboards/InstructorDashboard';
 import OrderSuccess from './pages/registration/OrderSuccess';
+import TermsAndConditions from './pages/Legal/TermsAndConditions';
+import RulesAndRegulations from './pages/Legal/RulesAndRegulations';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -55,7 +57,8 @@ function App() {
                 <Route path="/dashboard/manager" element={<TestManagerDashboard />} />
                 <Route path="/dashboard/instructor" element={<InstructorDashboard />} />
                 <Route path="/order-success" element={<OrderSuccess />} />
-                <Route path="/terms" element={<ErrorPage message='create terms and condition page' />} />
+                <Route path="/terms" element={<TermsAndConditions />} />
+                <Route path="/rules" element={<RulesAndRegulations />} />
                 <Route path="/privacy" element={<ErrorPage message='create privacy policy'/>} />
                 <Route path="/refund" element={<ErrorPage message='create refund page' />} />
                 <Route path="/disclaimer" element={<ErrorPage message='create disclaimer' />} />
