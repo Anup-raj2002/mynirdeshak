@@ -7,6 +7,7 @@ import {
   AuthorizationError,
   ConflictError,
   NotFoundError,
+  BadRequestError,
 } from '../middleware/errorHandler';
 import { cleanMongoData } from '../services/dataCleaner.service';
 import fs from 'fs';
@@ -23,7 +24,7 @@ export const newStudent = async (
 ) => {
   try {
     if (!req.user?.uid) {
-      throw new AppError('User ID is required', 400, true);
+      throw new BadRequestError('User ID is required');
     }
 
     await auth.setCustomUserClaims(req.user.uid, { role: UserRoles[0] });
@@ -55,7 +56,7 @@ export const getUserDetail = async (
 ) => {
   try {
     if (!req.user?.uid) {
-      throw new AppError('User ID is required', 400, true);
+      throw new BadRequestError('User ID is required');
     }
 
     const firebaseUser = await auth.getUser(req.user.uid);
@@ -83,7 +84,7 @@ export const updateUserDetails = async (
 ) => {
   try {
     if (!req.user?.uid) {
-      throw new AppError('User ID is required', 400, true);
+      throw new BadRequestError('User ID is required');
     }
     let values: any = await baseUserValidationSchema.partial().parseAsync(req.body);
 

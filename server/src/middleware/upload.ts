@@ -2,7 +2,7 @@ import multer, { FileFilterCallback } from 'multer';
 import { Response, NextFunction } from 'express';
 import { config } from '../config/variables.config';
 import { AuthRequest } from './auth';
-import { AppError } from './errorHandler';
+import { AppError, BadRequestError } from './errorHandler';
 import path from 'path';
 import { v4 as uuid } from 'uuid';
 import fs from 'fs';
@@ -47,11 +47,7 @@ const photoFilter = (
     cb(null, true);
   } else {
     cb(
-      new AppError(
-        'Invalid file type. Only JPEG, PNG, GIF images are allowed.',
-        400,
-        true
-      ),
+      new BadRequestError('Invalid file type. Only JPEG, PNG, GIF images are allowed.'),
     );
   }
 };
@@ -64,11 +60,9 @@ const handleUploadError = (
 ) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res
-        .status(400)
-        .json({ error: 'File too large. Maximum size is 5MB for photos and 50MB for PDFs.' });
+      return new BadRequestError('File too large. Maximum size is 5MB for photos and 50MB for PDFs.');
     }
-    return res.status(400).json({ error: err.message });
+    return new BadRequestError(err.message);
   }
 
   if (err instanceof AppError) {
@@ -76,7 +70,7 @@ const handleUploadError = (
   }
 
   if (err) {
-    return res.status(400).json({ error: err.message });
+    return new BadRequestError(err.message);
   }
 
   next();

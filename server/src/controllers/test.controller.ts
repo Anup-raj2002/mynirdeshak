@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth';
-import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError, AppError } from '../middleware/errorHandler';
+import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError, AppError, BadRequestError } from '../middleware/errorHandler';
 import { Test } from '../models/test.model';
 import { TestAttempt } from '../models/testAttempt.model';
 import { Question } from '../models/question.model';
@@ -11,9 +11,7 @@ import { Types } from 'mongoose';
 import { TestPayment } from '../models/payment.model';
 import { CashFree } from '../config/cashfree.config';
 import { config } from '../config/variables.config';
-import { auth } from '../config/firebase.config';
 import { v4 as uuid } from 'uuid';
-import { sendMail } from '../services/mail.service';
 import { testAttemptValidationSchema } from '../schemas/testAttempt.validator'
 import { UserRoles } from '../schemas/user.validator';
 
@@ -26,22 +24,41 @@ export const getTests = async (req: AuthRequest, res: Response, next: NextFuncti
     if (name) query.name = { $regex: name, $options: 'i' };
     if (description) query.description = { $regex: description, $options: 'i' };
 
-    const user = await User.findOne({ uid }).select('_id').lean();
+    const user = await User.findOne({ uid }).select('_id stream').lean();
     if (!user) throw new NotFoundError("User not found");
 
-    if (role === UserRoles[0]) {
-      // No testId in TestPayment anymore, so skip filtering by test payments
-    } else if (role === UserRoles[1]) {
+    // Role-based filtering
+    if (role === 'instructor') {
       query.instructorId = user._id;
+    } else if (role === 'student') {
+      query.stream = (user as any).stream;
     }
 
-    const tests = await Test.find(query, {
-      questions: 0,
-      instructorId: 0
-    }).lean();
+    // Fetch tests, populate sessionId for commonName
+    const tests = await Test.find(query)
+      .populate('sessionId', 'commonName year')
+      .lean();
 
     if (!tests.length) {
       res.status(200).json([]);
+      return;
+    }
+
+    // For students, strip question details
+    if (role === 'student') {
+      const studentTests = tests.map(test => ({
+        _id: test._id,
+        description: test.description,
+        stream: test.stream,
+        session: test.sessionId,
+        startDateTime: test.startDateTime,
+        isPublished: test.isPublished,
+        sections: test.sections.map((s: any) => ({
+          name: s.name,
+          questionCount: s.questions.length
+        })),
+      }));
+      res.status(200).json(studentTests);
       return;
     }
 
@@ -62,7 +79,10 @@ export const getTestById = async (
     if(!mUser) throw new AuthenticationError();
 
     const test = await Test.findById(testId)
-      .populate('questions')
+      .populate({
+        path: 'sections.questions',
+        model: 'Question',
+      })
       .lean();
     if (!test) {
       return next(new NotFoundError('Test not found'));
@@ -88,7 +108,19 @@ export const createTest = async (
     const validatedData = await testValidationSchema.parseAsync(req.body);
     const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
     if(!mUser) throw new AuthenticationError();
-    const test = await Test.create({instructorId: mUser._id, ...validatedData});
+
+    const sections = [
+      { name: 'A', questions: [] },
+      { name: 'B', questions: [] },
+      { name: 'C', questions: [] },
+      { name: 'D', questions: [] },
+    ];
+
+    const test = await Test.create({
+      instructorId: mUser._id,
+      sections: sections,
+      ...validatedData
+    });
     res.status(201).json(cleanMongoData(test.toJSON()));
   } catch (error) {
     next(error);
@@ -109,7 +141,9 @@ export const deleteTest = async (
     if (req.user?.role === 'instructor' && !test.instructorId.toString() === mUser.id) {
       throw new AuthorizationError('You do not have permission to delete this test');
     }
-    await Question.deleteMany({ _id: { $in: test.questions } });
+    // Collect all question IDs from all sections
+    const allQuestionIds = (test.sections || []).flatMap((section: any) => section.questions || []);
+    await Question.deleteMany({ _id: { $in: allQuestionIds } });
     await TestAttempt.deleteMany({ testId });
     await Test.findByIdAndDelete(testId);
     res.status(204).send();
@@ -121,17 +155,27 @@ export const deleteTest = async (
 export const addQuestionToTest = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const testId = req.params.testId;
-    let validateData = req.body;
-    validateData.testId = testId;
-    const test = await Test.findById(testId).lean();
+    const { section, ...questionData } = req.body;
+    if (!['A', 'B', 'C', 'D'].includes(section)) {
+      throw new BadRequestError('Invalid section. Must be A, B, C, or D.');
+    }
+    const test = await Test.findById(testId);
     if (!test) throw new NotFoundError('Test not found');
-    const newQuestion = await Question.create(validateData);
-    await Test.findByIdAndUpdate(testId, {
-      $push: { questions: newQuestion._id }
-    });
+    const sectionObj = test.sections.find(s => s.name === section);
+    if (!sectionObj) {
+      throw new BadRequestError('Section not found in test.');
+    }
+    if (sectionObj.questions.length >= 25) {
+      throw new BadRequestError('Section already has 25 questions.');
+    }
+    const newQuestion = await Question.create(questionData);
+    sectionObj.questions.push((newQuestion as any)._id);
+    await test.save();
     res.status(201).json({
       message: 'Question added successfully',
       question: cleanMongoData(newQuestion.toJSON()),
+      section: sectionObj.name,
+      totalQuestionsInSection: sectionObj.questions.length,
     });
   } catch (err) {
     next(err);
@@ -141,12 +185,26 @@ export const addQuestionToTest = async (req: AuthRequest, res: Response, next: N
 export const deleteQuestionFromTest = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { testId, questionId } = req.params;
-    const test = await Test.findById(testId).lean();
+    const { section } = req.body;
+    if (!['A', 'B', 'C', 'D'].includes(section)) {
+      throw new BadRequestError('Invalid section. Must be A, B, C, or D.');
+    }
+    const test = await Test.findById(testId);
     if (!test) throw new NotFoundError('Test not found');
+    // Enforce 100-minute window from startDateTime
+    const now = new Date();
+    const testStart = new Date(test.startDateTime);
+    const testEnd = new Date(testStart.getTime() + 100 * 60000); // 100 minutes in ms
+    if (now >= testStart && now <= testEnd) {
+      return res.status(403).json({ message: 'Cannot delete questions during the test window (100 minutes from start time).' });
+    }
+    const sectionObj = test.sections.find(s => s.name === section);
+    if (!sectionObj) {
+      throw new BadRequestError('Section not found in test.');
+    }
+    sectionObj.questions = sectionObj.questions.filter(qId => qId.toString() !== questionId);
+    await test.save();
     await Question.findByIdAndDelete(questionId);
-    await Test.findByIdAndUpdate(testId, {
-      $pull: { questions: questionId }
-    });
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -163,16 +221,20 @@ export const submitTestAttempt = async (
     const mUser = await User.findOne({ uid: req.user?.uid }).lean();
     if (!mUser) throw new AuthenticationError();
     const validatedData = await testAttemptValidationSchema.parseAsync(req.body);
-    const test = await Test.findById(testId).populate('questions').lean();
+    const test = await Test.findById(testId)
+      .populate({ path: 'sections.questions', model: 'Question' })
+      .lean();
     if (!test) return next(new NotFoundError('Test not found'));
-    
+
     const now = new Date();
-    if (now < test.startDateTime || now > test.endDateTime) {
+    if (now < test.startDateTime) {
       return next(new AuthorizationError('Test is not available at this time.'));
     }
+    // Flatten all questions from all sections
+    const allQuestions = test.sections.flatMap((section: any) => section.questions);
     let score = 0;
     const gradedAnswers = validatedData.answers.map((answer: any) => {
-      const question = test.questions?.find(q =>
+      const question = allQuestions.find((q: any) =>
         q._id.toString() === answer.questionId.toString()
       );
       if (!question) return null;
@@ -189,7 +251,7 @@ export const submitTestAttempt = async (
         isCorrect,
       };
     }).filter(Boolean);
-    const totalPoints = test.questions?.reduce((acc: any, q: any) => acc + (q as any).points, 0);
+    const totalPoints = allQuestions.reduce((acc: any, q: any) => acc + (q as any).points, 0);
     const percentageScore = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
     let attempt = await TestAttempt.findOne({ testId: testId, userId: mUser._id });
     if (!attempt) {
@@ -227,11 +289,13 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
     const mUser = await User.findOne({ uid: req.user?.uid }).lean();
     if (!mUser) throw new AuthenticationError();
     const userId = mUser._id;
-    const test = await Test.findOne({ _id: testId, isPublished: true }).populate('questions').lean();
+    const test = await Test.findOne({ _id: testId, isPublished: true })
+      .populate({ path: 'sections.questions', model: 'Question' })
+      .lean();
     if (!test) throw new NotFoundError('Test not found');
-    
+
     const now = new Date();
-    if (now < test.startDateTime || now > test.endDateTime) {
+    if (now < test.startDateTime) {
       return next(new AuthorizationError('Test is not available at this time.'));
     }
     let attempt = await TestAttempt.findOne({ testId, userId });
@@ -245,33 +309,37 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
       return next(new AuthorizationError('You have already completed this test.'));
     }
 
-    // Shuffle questions
-    const shuffledQuestions = [...(test.questions as any[])]
-      .sort(() => Math.random() - 0.5)
-      .map((q: any) => {
-        // Shuffle options and create a mapping
-        const originalOptions = [...q.options];
-        const optionIndices = originalOptions.map((_, idx) => idx);
-        for (let i = optionIndices.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [optionIndices[i], optionIndices[j]] = [optionIndices[j], optionIndices[i]];
-        }
-        const shuffledOptions = optionIndices.map(idx => originalOptions[idx]);
-        return {
-          _id: q._id,
-          question: q.question,
-          options: shuffledOptions,
-          points: q.points,
-          optionMap: optionIndices, // send this to frontend
-        };
-      });
+    // Shuffle questions and options per section
+    const shuffledSections = test.sections.map((section: any) => {
+      const shuffledQuestions = [...section.questions]
+        .sort(() => Math.random() - 0.5)
+        .map((q: any) => {
+          // Shuffle options and create a mapping
+          const originalOptions = [...q.options];
+          const optionIndices = originalOptions.map((_: any, idx: number) => idx);
+          for (let i = optionIndices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [optionIndices[i], optionIndices[j]] = [optionIndices[j], optionIndices[i]];
+          }
+          const shuffledOptions = optionIndices.map(idx => originalOptions[idx]);
+          return {
+            _id: q._id,
+            question: q.question,
+            options: shuffledOptions,
+            points: q.points,
+            optionMap: optionIndices, // send this to frontend
+          };
+        });
+      return {
+        name: section.name,
+        questions: shuffledQuestions,
+      };
+    });
     res.status(200).json({
       testId: test._id,
-      name: test.name,
       description: test.description,
       startDateTime: test.startDateTime,
-      endDateTime: test.endDateTime,
-      questions: shuffledQuestions,
+      sections: shuffledSections,
     });
   } catch (error) {
     next(error);
@@ -327,13 +395,12 @@ export const updateTest = async (
     if (req.user?.role === 'instructor' && !test.instructorId.toString() === mUser.id) {
       throw new AuthorizationError('You cannot modify tests owned by other instructors');
     }
-    if (updateData.name !== undefined) test.name = updateData.name;
     if (updateData.description !== undefined) test.description = updateData.description;
     if (updateData.isPublished !== undefined) test.isPublished = updateData.isPublished;
+    if (updateData.sessionId !== undefined) test.sessionId = updateData.sessionId;
+    if (updateData.stream !== undefined) test.stream = updateData.stream;
+    if (updateData.sections !== undefined) test.sections = updateData.sections;
     if (updateData.startDateTime !== undefined) test.startDateTime = updateData.startDateTime;
-    if (updateData.endDateTime !== undefined) test.endDateTime = updateData.endDateTime;
-    if (updateData.registrationEndDateTime !== undefined) test.registrationEndDateTime = updateData.registrationEndDateTime;
-    if(updateData.price !== undefined) test.price = updateData.price;
     await test.save();
     res.json(cleanMongoData(test.toJSON()));
   } catch (error) {
@@ -588,10 +655,10 @@ export const grantStudent = async (req: AuthRequest, res: Response, next: NextFu
   try {
     const { uid, amount } = req.body;
     if (!uid || !amount) {
-      throw new AppError('uid and amount are required', 400, true);
+      throw new BadRequestError('uid and amount are required');
     }
     if (typeof amount !== 'number' || amount <= 0) {
-      throw new AppError('Amount must be a positive number', 400, true);
+      throw new BadRequestError('Amount must be a positive number');
     }
     if (!['admin', 'test-manager'].includes(req.user?.role || "")) {
       throw new AuthorizationError();

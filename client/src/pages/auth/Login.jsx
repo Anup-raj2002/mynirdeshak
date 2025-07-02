@@ -181,7 +181,7 @@ const Login = () => {
               <LogIn className="h-8 w-8 text-white" />
             </motion.div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
-            <p className="text-gray-600">Access your Track Your Way account</p>
+            <p className="text-gray-600">Access your My nirdeshak account</p>
           </div>
 
           <form onSubmit={handleFormSubmit} className="space-y-6">

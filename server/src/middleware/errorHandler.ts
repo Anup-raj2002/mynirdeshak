@@ -31,6 +31,11 @@ export class AuthorizationError extends AppError {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message: string = 'Bad Request') {
+    super(message, 400, true);
+  }
+}
 export class NotFoundError extends AppError {
   constructor(message: string = 'Resource not found') {
     super(message, 404, true);
