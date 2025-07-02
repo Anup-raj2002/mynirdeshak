@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useTestById, useUpdateTest, useAddQuestionToTest, useDeleteQuestionFromTest } from "../../queries/useTestsQueries";
-import { X, Plus, Trash2, Edit } from "lucide-react";
+import { X, Plus, Trash2, Edit, ChevronDown, ChevronRight } from "lucide-react";
 import Loading from "../ui/Loading";
 import ErrorPage from "../ui/ErrorPage";
+import { SECTION_ORDER, getSectionMeta } from "../../utils/sectionConfig";
 
 const TestManageModal = ({ testId, open, onClose }) => {
   const { data: test, isLoading, error } = useTestById(testId);
@@ -16,23 +17,28 @@ const TestManageModal = ({ testId, open, onClose }) => {
     question: "",
     options: ["", "", "", ""],
     correctAnswer: 0,
-    points: 1,
+    section: SECTION_ORDER[0],
   });
+  const [openSection, setOpenSection] = useState(null);
 
   if (!open) return null;
   if (isLoading) return <Loading />;
   if (error) return <ErrorPage message={error.message} />;
   if (!test) return null;
 
+  // Section meta and mapping
+  const sectionMeta = getSectionMeta(test.stream);
+  const sectionMap = {};
+  (test.sections || []).forEach((sec) => {
+    sectionMap[sec.name] = sec;
+  });
+
   // Handlers
   const handleEditTest = () => {
     setEditForm({
-      name: test.name,
+      stream: test.stream,
       description: test.description,
       startDateTime: test.startDateTime?.slice(0, 16),
-      endDateTime: test.endDateTime?.slice(0, 16),
-      registrationEndDateTime: test.registrationEndDateTime?.slice(0, 16),
-      price: test.price,
     });
     setMode("editTest");
   };
@@ -44,12 +50,15 @@ const TestManageModal = ({ testId, open, onClose }) => {
 
   const handleEditFormSubmit = async (e) => {
     e.preventDefault();
-    await updateTest({ testId, updateData: { ...editForm, price: Number(editForm.price) } });
-    setMode(null);
+    await updateTest({ testId, updateData: {
+      description: editForm.description,
+      startDateTime: editForm.startDateTime,
+    }});
+    setMode("addQuestion");
   };
 
-  const handleAddQuestion = () => {
-    setQuestionForm({ question: "", options: ["", "", "", ""], correctAnswer: 0, points: 1 });
+  const handleAddQuestion = (section) => {
+    setQuestionForm({ question: "", options: ["", "", "", ""], correctAnswer: 0, section });
     setMode("addQuestion");
   };
 
@@ -71,14 +80,18 @@ const TestManageModal = ({ testId, open, onClose }) => {
     await addQuestion({ testId, questionData: {
       ...questionForm,
       correctAnswer: Number(questionForm.correctAnswer),
-      points: Number(questionForm.points),
+      section: questionForm.section,
     }});
-    setMode(null);
+    setMode("addQuestion");
   };
 
   const handleDeleteQuestion = async (questionId) => {
     if (!window.confirm("Delete this question?")) return;
     await deleteQuestion({ testId, questionId });
+  };
+
+  const toggleSection = (section) => {
+    setOpenSection((prev) => (prev === section ? null : section));
   };
 
   return (
@@ -89,45 +102,56 @@ const TestManageModal = ({ testId, open, onClose }) => {
           <X size={24} />
         </button>
         {/* Sidebar */}
-        <div className="bg-gray-50 w-80 h-full p-6 flex flex-col border-r">
-          <div className="flex items-center gap-2 mb-6">
-            <span className="text-lg font-bold text-left flex-1 truncate">{test.name}</span>
-            <button onClick={handleEditTest} className="p-1 rounded hover:bg-gray-200">
-              <Edit size={18} />
+        <div className="bg-gray-50 w-80 h-full p-6 flex flex-col border-r overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-lg font-bold text-left truncate">{test.stream}</span>
+            <button onClick={handleEditTest} className="p-1 rounded hover:bg-gray-200 flex items-center gap-1 text-blue-600 text-xs font-medium">
+              <Edit size={16} />
             </button>
           </div>
-          <div className="mb-4 text-xs text-gray-500">Questions</div>
-          <div className="flex-1 overflow-y-auto">
-            {test.questions && test.questions.length > 0 ? (
-              <ul className="space-y-2">
-                {test.questions.map((q) => (
-                  <li key={q.id} className="flex items-center justify-between group bg-gray-100 rounded px-2 py-1">
-                    <span className="truncate text-sm">{q.question}</span>
-                    <button
-                      onClick={() => handleDeleteQuestion(q.id)}
-                      className="ml-2 p-1 rounded hover:bg-red-100 text-red-600"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-                <span className="mb-2">No questions yet</span>
-                <svg width="48" height="48" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#cbd5e1" strokeWidth="2" /><path d="M12 8v4m0 4h.01" stroke="#cbd5e1" strokeWidth="2" strokeLinecap="round" /></svg>
-              </div>
-            )}
+          <div className="flex flex-col gap-2 mt-1">
+            {sectionMeta.map((meta) => {
+              const sec = sectionMap[meta.section] || {};
+              const questions = sec.questions || [];
+              return (
+                <div key={meta.section} className="bg-blue-50 rounded px-2 py-2 flex flex-col">
+                  <button
+                    className="flex items-center justify-between w-full text-left font-semibold text-blue-800 focus:outline-none"
+                    onClick={() => toggleSection(meta.section)}
+                  >
+                    <span>{meta.label}</span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-xs text-gray-600">{questions.length} Qs</span>
+                      {openSection === meta.section ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    </span>
+                  </button>
+                  <span className="text-xs text-gray-500 mb-1">{meta.topics}</span>
+                  <button
+                    onClick={() => handleAddQuestion(meta.section)}
+                    className="mt-1 text-xs text-blue-600 hover:underline self-end"
+                  >
+                    <Plus size={14} className="inline-block mr-1" /> Add Question
+                  </button>
+                  {openSection === meta.section && questions.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {questions.map((q) => (
+                        <li key={q.id} className="flex items-center justify-between group bg-gray-100 rounded px-2 py-1">
+                          <span className="truncate text-sm">{q.question}</span>
+                          <span className="text-xs text-green-700 ml-2">Ans: {q.options?.[q.correctAnswer] || "-"}</span>
+                          <button
+                            onClick={() => handleDeleteQuestion(q.id)}
+                            className="ml-2 p-1 rounded hover:bg-red-100 text-red-600"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          {/* Add Question button only visible in editTest mode */}
-          {mode === "editTest" && (
-            <button
-              onClick={() => setMode("addQuestion")}
-              className="mt-6 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
-            >
-              <Plus size={18} /> Add Question
-            </button>
-          )}
         </div>
         {/* Main area */}
         <div className="flex-1 bg-white p-10 pb-16 overflow-y-auto">
@@ -135,45 +159,37 @@ const TestManageModal = ({ testId, open, onClose }) => {
             <form onSubmit={handleEditFormSubmit} className="max-w-lg mx-auto space-y-6">
               <h2 className="text-xl font-bold mb-4">Edit Test Details</h2>
               <div>
-                <label className="block text-sm font-medium mb-1">Test Name</label>
-                <input name="name" value={editForm.name} onChange={handleEditFormChange} className="w-full border rounded px-3 py-2" required />
+                <label className="block text-sm font-medium mb-1">Stream</label>
+                <input name="stream" value={editForm.stream} className="w-full border rounded px-3 py-2 bg-gray-100" disabled />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea name="description" value={editForm.description} onChange={handleEditFormChange} className="w-full border rounded px-3 py-2" rows={3} required />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Start Date & Time</label>
-                  <input type="datetime-local" name="startDateTime" value={editForm.startDateTime} onChange={handleEditFormChange} className="w-full border rounded px-3 py-2" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">End Date & Time</label>
-                  <input type="datetime-local" name="endDateTime" value={editForm.endDateTime} onChange={handleEditFormChange} className="w-full border rounded px-3 py-2" required />
-                </div>
-              </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Registration End Date & Time</label>
-                <input type="datetime-local" name="registrationEndDateTime" value={editForm.registrationEndDateTime} onChange={handleEditFormChange} className="w-full border rounded px-3 py-2" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Price (INR)</label>
-                <input type="number" name="price" value={editForm.price} onChange={handleEditFormChange} className="w-full border rounded px-3 py-2" min={0} required />
+                <label className="block text-sm font-medium mb-1">Start Date & Time</label>
+                <input type="datetime-local" name="startDateTime" value={editForm.startDateTime} onChange={handleEditFormChange} className="w-full border rounded px-3 py-2" required />
               </div>
               <button type="submit" className="bg-blue-600 text-white px-8 py-2 rounded w-full sm:w-auto float-right">Save Changes</button>
             </form>
           )}
-          {mode !== "editTest" && (
-            <form onSubmit={e => {
-              e.preventDefault();
-              addQuestion({ testId, questionData: {
-                ...questionForm,
-                correctAnswer: questionForm.correctAnswer,
-                points: Number(questionForm.points),
-              }});
-              handleAddQuestion();
-            }} className="max-w-lg mx-auto space-y-6">
+          {mode === "addQuestion" && (
+            <form onSubmit={handleQuestionFormSubmit} className="max-w-lg mx-auto mb-8 space-y-6">
               <h2 className="text-xl font-bold mb-4">Add Question</h2>
+              <div>
+                <label className="block text-sm font-medium mb-1">Section</label>
+                <select
+                  name="section"
+                  value={questionForm.section}
+                  onChange={handleQuestionFormChange}
+                  className="w-full border rounded px-3 py-2"
+                  required
+                >
+                  {sectionMeta.map((meta) => (
+                    <option key={meta.section} value={meta.section}>{meta.label}</option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Question</label>
                 <input name="question" value={questionForm.question} onChange={handleQuestionFormChange} className="w-full border rounded px-3 py-2" required />
@@ -200,18 +216,6 @@ const TestManageModal = ({ testId, open, onClose }) => {
                     <span className="ml-1 text-xs text-gray-600">Correct</span>
                   </div>
                 ))}
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Points</label>
-                <input
-                  name="points"
-                  type="number"
-                  min={1}
-                  value={questionForm.points}
-                  onChange={handleQuestionFormChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
               </div>
               <button type="submit" className="bg-blue-600 text-white px-8 py-2 rounded w-full sm:w-auto float-right">Add Question</button>
             </form>

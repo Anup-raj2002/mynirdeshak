@@ -86,22 +86,34 @@ export const useDeleteTest = () => {
 
 export const useAddQuestionToTest = () => {
   const queryClient = useQueryClient();
-  
+  const { showNotification } = useNotification();
+
   return useMutation({
     mutationFn: ({ testId, questionData }) => testApi.addQuestionToTest(testId, questionData),
     onSuccess: (data, { testId }) => {
       queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+      showNotification('Question added successfully!', 'success');
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add question.';
+      showNotification(errorMessage, 'error');
     },
   });
 };
 
 export const useDeleteQuestionFromTest = () => {
   const queryClient = useQueryClient();
-  
+  const { showNotification } = useNotification();
+
   return useMutation({
     mutationFn: ({ testId, questionId }) => testApi.deleteQuestionFromTest(testId, questionId),
     onSuccess: (data, { testId }) => {
       queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+      showNotification('Question deleted successfully!', 'success');
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete question.';
+      showNotification(errorMessage, 'error');
     },
   });
 };

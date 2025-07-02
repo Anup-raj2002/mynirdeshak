@@ -1,18 +1,15 @@
 import React from "react";
 import { Edit, Trash2, CalendarClock } from "lucide-react";
 import PublishTestButton from "./PublishTestButton";
-
-const SECTION_ORDER = ["A", "B", "C", "D"];
+import { SECTION_ORDER } from "../../utils/sectionConfig";
 
 const TestCard = ({ test, onSelect, onDelete }) => {
-  const sectionCounts = (test.questions || []).reduce((acc, q) => {
-    const section = q.section || "Other";
-    acc[section] = (acc[section] || 0) + 1;
-    return acc;
-  }, {});
-
+  const sectionMap = {};
+  (test.sections || []).forEach((sec) => {
+    sectionMap[sec.name] = sec;
+  });
   const sectionDisplay = SECTION_ORDER.map(
-    (sec) => String(sectionCounts[sec] || "00").padStart(2, "0")
+    (sec) => String((sectionMap[sec]?.questions?.length || 0)).padStart(2, "0")
   ).join(" | ");
 
   const formatDateIST = (dateString) => {
@@ -32,8 +29,8 @@ const TestCard = ({ test, onSelect, onDelete }) => {
       <div className="flex justify-between items-start mb-4">
         <div>
           <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-          <h3 className="text-xl font-bold text-gray-800">{test.stream}</h3>
-            <CalendarClock size={18} className="inline-block ms-2" />
+            <h3 className="text-xl font-bold text-gray-800">{test.stream}</h3>
+            <CalendarClock size={14} className="ms-2 inline-block" />
             {formatDateIST(test.startDateTime)}
           </div>
           <p className="text-sm text-gray-500 mt-1">{test.description}</p>
@@ -43,7 +40,9 @@ const TestCard = ({ test, onSelect, onDelete }) => {
         </div>
       </div>
       <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex flex-col gap-1 text-sm min-w-[180px] font-semibold text-blue-700 tracking-wider">{sectionDisplay}</div>
+        <div className="flex flex-col gap-1 text-sm text-gray-600 min-w-[180px]">
+          <div className="font-semibold text-blue-700 tracking-wider">{sectionDisplay}</div>
+        </div>
         <div className="flex items-center gap-2 mt-2 sm:mt-0">
           <button
             onClick={(e) => {

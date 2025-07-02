@@ -172,7 +172,7 @@ export const addQuestionToTest = async (req: AuthRequest, res: Response, next: N
     }
     // Validate question data
     const validatedQuestion = await questionValidationSchema.parseAsync(questionData);
-    const newQuestion = await Question.create(validatedQuestion);
+    const newQuestion = await Question.create({testId, ...validatedQuestion});
     sectionObj.questions.push((newQuestion as any)._id);
     await test.save();
     res.status(201).json({
