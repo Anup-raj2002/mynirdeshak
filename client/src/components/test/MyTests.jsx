@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useNotification } from "../contexts/NotificationContext";
-import { useTests, useDeleteTest } from "../queries/useTestsQueries";
-import Loading from "./Loading";
-import ErrorPage from "./ErrorPage";
+import { useNotification } from "../../contexts/NotificationContext";
+import { useTests, useDeleteTest } from "../../queries/useTestsQueries";
+import Loading from "../ui/Loading";
+import ErrorPage from "../ui/ErrorPage";
 import EmptyTests from "./EmptyTests";
 import TestCard from "./TestCard";
 import TestManageModal from "./TestManageModal";

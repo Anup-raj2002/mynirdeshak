@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useUser } from "../contexts/UserContext";
-import { useUpdateProfile } from "../queries/useUserQueries";
-import { useNotification } from "../contexts/NotificationContext";
+import { useUser } from "../../contexts/UserContext";
+import { useUpdateProfile } from "../../queries/useUserQueries";
+import { useNotification } from "../../contexts/NotificationContext";
 
 export default function ProfileSettings() {
   const { profile, loading: loadingProfileData } = useUser();

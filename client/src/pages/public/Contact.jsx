@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send, MessageCircle } from 'lucide-react';
-import { useSubmitContactUs } from '../queries/useFormsQueries';
-import { useNotification } from '../contexts/NotificationContext';
+import { useSubmitContactUs } from '../../queries/useFormsQueries';
+import { useNotification } from '../../contexts/NotificationContext';
 
 const Contact = () => {
   const submitForm = useSubmitContactUs();

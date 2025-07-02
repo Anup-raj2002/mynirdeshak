@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import User from "../components/User.jsx";
-import { useUser } from "../contexts/UserContext.jsx";
-import UserManagement from "../components/UserManagement.jsx";
-import MyTests from "../components/MyTests.jsx";
-import ProfileSettings from "../components/ProfileSettings.jsx";
-import AccountSettings from "../components/AccountSettings.jsx";
-import Loading from "../components/Loading.jsx";
-import ErrorPage from "../components/ErrorPage.jsx";
+import User from "../../components/user/User";
+import { useUser } from "../../contexts/UserContext";
+import UserManagement from "../../components/user/UserManagement";
+import MyTests from "../../components/test/MyTests";
+import ProfileSettings from "../../components/user/ProfileSettings";
+import AccountSettings from "../../components/user/AccountSettings";
+import Loading from "../../components/ui/Loading";
+import ErrorPage from "../../components/ui/ErrorPage";
 import { Settings, FileText, User as UserIcon, UserPlusIcon, BookOpen, Menu, UsersIcon } from 'lucide-react';
-import GrantStudent from "./GrantStudent.jsx";
+import GrantStudent from "../../components/test/GrantTest";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("viewTests");

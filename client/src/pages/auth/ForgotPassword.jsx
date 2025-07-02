@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, ArrowRight } from 'lucide-react';
-import { resetPassword } from '../api/auth';
-import { useNotification } from '../contexts/NotificationContext';
+import { resetPassword } from '../../api/auth';
+import { useNotification } from '../../contexts/NotificationContext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');

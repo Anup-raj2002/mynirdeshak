@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useTestById, useUpdateTest, useAddQuestionToTest, useDeleteQuestionFromTest } from "../queries/useTestsQueries";
+import { useTestById, useUpdateTest, useAddQuestionToTest, useDeleteQuestionFromTest } from "../../queries/useTestsQueries";
 import { X, Plus, Trash2, Edit } from "lucide-react";
-import Loading from "./Loading";
-import ErrorPage from "./ErrorPage";
+import Loading from "..//uiLoading";
+import ErrorPage from "../ui/ErrorPage";
 
 const TestManageModal = ({ testId, open, onClose }) => {
   const { data: test, isLoading, error } = useTestById(testId);

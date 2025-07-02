@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Eye, EyeOff, Lock } from 'lucide-react';
-import { changeEmail, changePassword } from '../api/auth';
-import { useNotification } from '../contexts/NotificationContext';
-import { useUser } from '../contexts/UserContext';
+import { changeEmail, changePassword } from '../../api/auth';
+import { useNotification } from '../../contexts/NotificationContext';
+import { useUser } from '../../contexts/UserContext';
 
 function AccountSettings() {
   const { profile } = useUser();

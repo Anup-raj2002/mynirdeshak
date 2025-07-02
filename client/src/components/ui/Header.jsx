@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, GraduationCap, User, LogIn, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUser } from '../contexts/UserContext';
-import { useNotification } from '../contexts/NotificationContext';
-import { logout } from '../api/auth';
-import roleConfig from '../utils/roleConfig';
+import { useUser } from '../../contexts/UserContext';
+import { useNotification } from '../../contexts/NotificationContext';
+import { logout } from '../../api/auth';
+import roleConfig from '../../utils/roleConfig';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

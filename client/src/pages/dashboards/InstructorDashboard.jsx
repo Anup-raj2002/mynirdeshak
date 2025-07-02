@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useUser } from "../contexts/UserContext";
-import ProfileSettings from "../components/ProfileSettings";
-import MyTests from "../components/MyTests";
-import Loading from "../components/Loading";
-import ErrorPage from "../components/ErrorPage";
-import AccountSettings from "../components/AccountSettings";
-import CreateTest from "../components/CreateTest";
-import { Settings, FileText, User as UserIcon, BookOpen, PlusCircle, Menu } from 'lucide-react';
+import { useUser } from "../../contexts/UserContext";
+import ProfileSettings from "../../components/user/ProfileSettings";
+import MyTests from "../../components/test/MyTests";
+import Loading from "../../components/ui/Loading";
+import ErrorPage from "../../components/ui/ErrorPage";
+import AccountSettings from "../../components/user/AccountSettings";
+import CreateTest from "../../components/test/CreateTest";
+import { Settings, User as UserIcon, BookOpen, PlusCircle, Menu } from 'lucide-react';
 
 const InstructorDashboard = () => {
   const [activeTab, setActiveTab] = useState("profile");

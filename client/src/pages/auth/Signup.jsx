@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
-import { signupWithEmail, logout } from '../api/auth';
-import { useNotification } from '../contexts/NotificationContext';
-import SignupStepper from '../components/signup/SignupStepper';
-import SignupStepPersonalDetails from '../components/signup/SignupStepPersonalDetails';
-import SignupStepAccountDetails from '../components/signup/SignupStepAccountDetails';
+import { signupWithEmail, logout } from '../../api/auth';
+import { useNotification } from '../../contexts/NotificationContext';
+import SignupStepper from '../../components/signup/SignupStepper';
+import SignupStepPersonalDetails from '../../components/signup/SignupStepPersonalDetails';
+import SignupStepAccountDetails from '../../components/signup/SignupStepAccountDetails';
 
 const initialFormData = {
   name: '',

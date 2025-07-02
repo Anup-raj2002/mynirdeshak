@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import RegistrationStepper from '../components/registration/RegistrationStepper';
-import StepPersonalDetails from '../components/registration/StepPersonalDetails';
-import StepFamilySocioEconomic from '../components/registration/StepFamilySocioEconomic';
-import StepCareerAcademic from '../components/registration/StepCareerAcademic';
-import StepAddress from '../components/registration/StepAddress';
-import StepUploads from '../components/registration/StepUploads';
-import StepOtherInfo from '../components/registration/StepOtherInfo';
-import StepDeclarationPayment from '../components/registration/StepDeclarationPayment';
+import RegistrationStepper from '../../components/registration/RegistrationStepper';
+import StepPersonalDetails from '../../components/registration/StepPersonalDetails';
+import StepFamilySocioEconomic from '../../components/registration/StepFamilySocioEconomic';
+import StepCareerAcademic from '../../components/registration/StepCareerAcademic';
+import StepAddress from '../../components/registration/StepAddress';
+import StepUploads from '../../components/registration/StepUploads';
+import StepOtherInfo from '../../components/registration/StepOtherInfo';
+import StepDeclarationPayment from '../../components/registration/StepDeclarationPayment';
 import {
   User, GraduationCap, FileText, MapPin, Image as ImageIcon, Info, ShieldCheck
 } from 'lucide-react';

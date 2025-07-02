@@ -1,26 +1,26 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
+import Header from './components/ui/Header';
+import Footer from './components/ui/Footer';
 import Home from './pages/Home';
-import About from './components/About';
-import HowItWorks from './pages/HowItWorks';
-import Scholarships from './pages/Scholarships';
-import Registration from './pages/Registration';
-import Contact from './components/Contact';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
+import About from './pages/public/About';
+import HowItWorks from './pages/public/HowItWorks';
+import Scholarships from './pages/public/Scholarships';
+import Registration from './pages/registration/Registration';
+import Contact from './pages/public/Contact';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
+import StudentDashboard from './pages/dashboards/StudentDashboard';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { UserProvider } from './contexts/UserContext';
-import ForgotPassword from './pages/ForgotPassword';
+import ForgotPassword from './pages/auth/ForgotPassword';
 import NotFound from './pages/NotFound';
-import ExamInfo from './pages/ExamInfo';
-import ErrorPage from './components/ErrorPage';
-import AdminDashboard from './pages/AdminDashboard';
-import TestManagerDashboard from './pages/TestManagerDashboard';
-import InstructorDashboard from './pages/InstructorDashboard';
-import OrderSuccess from './pages/OrderSuccess';
+import ExamInfo from './pages/public/ExamInfo';
+import ErrorPage from './components/ui/ErrorPage';
+import AdminDashboard from './pages/dashboards/AdminDashboard';
+import TestManagerDashboard from './pages/dashboards/TestManagerDashboard';
+import InstructorDashboard from './pages/dashboards/InstructorDashboard';
+import OrderSuccess from './pages/registration/OrderSuccess';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -50,7 +50,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/dashboard/student" element={<Dashboard />} />
+                <Route path="/dashboard/student" element={<StudentDashboard />} />
                 <Route path="/dashboard/admin" element={<AdminDashboard />} />
                 <Route path="/dashboard/manager" element={<TestManagerDashboard />} />
                 <Route path="/dashboard/instructor" element={<InstructorDashboard />} />

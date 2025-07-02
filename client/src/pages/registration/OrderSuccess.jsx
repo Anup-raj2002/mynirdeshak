@@ -1,12 +1,12 @@
 import React from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { CheckCircle, XCircle } from "lucide-react";
-import { useCheckPaymentStatus } from "../queries/useTestsQueries";
-import { useSubmitRegistration } from "../queries/useFormsQueries";
-import Loading from "../components/Loading";
-import ErrorPage from "../components/ErrorPage";
+import { useCheckPaymentStatus } from "../../queries/useTestsQueries";
+import { useSubmitRegistration } from "../../queries/useFormsQueries";
+import Loading from "../../components/ui/Loading";
+import ErrorPage from "../../components/ui/ErrorPage";
 import { motion } from "framer-motion";
-import { useNotification } from "../contexts/NotificationContext";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const REGISTRATION_DATA_KEY = "registrationFormData";
 const REGISTRATION_STEP_KEY = "registrationFormStep";

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import User from "../components/User.jsx";
-import { useUser } from "../contexts/UserContext.jsx";
-import UserManagement from "../components/UserManagement.jsx";
-import MyTests from "../components/MyTests.jsx";
-import ProfileSettings from "../components/ProfileSettings.jsx";
-import AccountSettings from "../components/AccountSettings.jsx";
-import Loading from "../components/Loading.jsx";
-import ErrorPage from "../components/ErrorPage.jsx";
+import User from "../../components/user/User";
+import { useUser } from "../../contexts/UserContext.jsx";
+import UserManagement from "../../components/user/UserManagement";
+import MyTests from "../../components/test/MyTests";
+import ProfileSettings from "../../components/user/ProfileSettings";
+import AccountSettings from "../../components/user/AccountSettings";
+import Loading from "../../components/ui/Loading";
+import ErrorPage from "../../components/ui/ErrorPage";
 import { Settings, FileText, User as UserIcon, BookOpen, UsersIcon,UserPlusIcon } from 'lucide-react';
-import GrantStudent from "./GrantStudent.jsx";
+import GrantTest from "../../components/test/GrantTest";
 
 function CourseManagerDashboard() {
   const { profile: user, loading: userLoading, error: userError } = useUser();
@@ -55,7 +55,7 @@ function CourseManagerDashboard() {
           )}
           {activeTab === "userManagement" && <UserManagement />}
           {activeTab === "Settings" && <AccountSettings />}
-          {activeTab === "grantStudent" && <GrantStudent />}
+          {activeTab === "grantStudent" && <GrantTest />}
         </div>
       </main>
     </div>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { grantStudent } from '../api/tests';
-import { useNotification } from '../contexts/NotificationContext.jsx';
+import { grantStudent } from '../../api/tests.js';
+import { useNotification } from '../../contexts/NotificationContext.jsx';
 
-const GrantStudent = () => {
+const GrantTest = () => {
   const [form, setForm] = useState({ uid: '', amount: '' });
   const { showNotification } = useNotification();
 
@@ -79,4 +79,4 @@ const GrantStudent = () => {
   );
 };
 
-export default GrantStudent; 
+export default GrantTest; 

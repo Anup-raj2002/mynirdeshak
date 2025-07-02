@@ -3,10 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, LogIn, ArrowRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { resendVerificationEmail } from "../api/auth";
-import { loginWithEmail, logout } from "../api/auth";
-import { useNotification } from "../contexts/NotificationContext";
-import roleConfig from "../utils/roleConfig";
+import { resendVerificationEmail } from "../../api/auth";
+import { loginWithEmail, logout } from "../../api/auth";
+import { useNotification } from "../../contexts/NotificationContext";
+import roleConfig from "../../utils/roleConfig";
 
 const Login = () => {
   const navigate = useNavigate();

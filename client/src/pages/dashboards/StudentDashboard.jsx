@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Settings, FileText, Menu, User as UserIcon } from 'lucide-react';
-import AccountSettings from "../components/AccountSettings";
-import ProfileSettings from "../components/ProfileSettings";
-import { useUser } from '../contexts/UserContext';
-import { useTests } from '../queries/useTestsQueries';
-import StudentTestCard from '../components/StudentTestCard';
-import Loading from '../components/Loading';
-import ErrorPage from '../components/ErrorPage';
-import { useCheckPaymentStatus } from '../queries/useTestsQueries';
+import AccountSettings from "../../components/user/AccountSettings";
+import ProfileSettings from "../../components/user/ProfileSettings";
+import { useUser } from '../../contexts/UserContext';
+import { useTests } from '../../queries/useTestsQueries';
+import StudentTestCard from '../../components/test/StudentTestCard';
+import Loading from '../../components/ui/Loading';
+import ErrorPage from '../../components/ui/ErrorPage';
+import { useCheckPaymentStatus } from '../../queries/useTestsQueries';
 import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
