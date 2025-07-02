@@ -15,7 +15,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { UserProvider } from './contexts/UserContext';
 import ForgotPassword from './pages/ForgotPassword';
 import NotFound from './pages/NotFound';
-import UpcomingTests from './pages/UpcomingTest';
+import ExamInfo from './pages/ExamInfo';
 import ErrorPage from './components/ErrorPage';
 import AdminDashboard from './pages/AdminDashboard';
 import TestManagerDashboard from './pages/TestManagerDashboard';
@@ -45,7 +45,7 @@ function App() {
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/scholarships" element={<Scholarships />} />
                 <Route path="/register" element={<Registration />} />
-                <Route path="/exams" element={<UpcomingTests />} />
+                <Route path="/exam-info" element={<ExamInfo />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />

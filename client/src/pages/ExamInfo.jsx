@@ -25,7 +25,7 @@ import {
   Lightbulb,
 } from "lucide-react"
 
-function UpcomingTests() {
+function ExamInfo() {
   const [activeStream, setActiveStream] = useState("pcm")
 
   const examFormat = {
@@ -611,4 +611,4 @@ function UpcomingTests() {
   )
 }
 
-export default UpcomingTests
+export default ExamInfo

@@ -108,7 +108,7 @@ const Home = () => {
               className="text-xl md:text-2xl mb-12 text-blue-100 max-w-3xl mx-auto leading-relaxed"
             >
               Empowering 12th grade graduates with scholarships to pursue higher education. 
-              Your journey to success starts here with Love Kumar Sharma's vision.
+              Your journey to success starts here with Lav Kumar Sharma's vision.
             </motion.p>
 
             {/* CTA Buttons */}

@@ -4,7 +4,6 @@ import {
   signInWithEmailAndPassword,
   sendEmailVerification,
   signInWithPopup,
-  GoogleAuthProvider,
   fetchSignInMethodsForEmail,
   updateEmail,
   EmailAuthProvider,
@@ -14,7 +13,6 @@ import {
   signOut,
 } from "firebase/auth";
 import { registerUser } from "./users";
-const provider = new GoogleAuthProvider();
 
 export const getErrorMessage = (error) => {
   const code = error.code;
@@ -77,32 +75,6 @@ export const loginWithEmail = async (email, password) => {
     if (!user.emailVerified) {
       throw new Error("Please verify your email before logging in");
     }
-    return user;
-  } catch (error) {
-    throw new Error(getErrorMessage(error));
-  }
-};
-
-export const loginWithGoogle = async () => {
-  try {
-    const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
-    return user;
-  } catch (error) {
-    throw new Error(getErrorMessage(error));
-  }
-};
-
-export const signupWithGoogle = async () => {
-  try {
-    const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
-    if (!userCredential._tokenResponse?.isNewUser) {
-      throw new Error("User already exists");
-    }
-
-    await registerUser(user.uid);
-
     return user;
   } catch (error) {
     throw new Error(getErrorMessage(error));
