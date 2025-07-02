@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useUser } from "../contexts/UserContext";
-import { useNotification } from "../contexts/NotificationContext";
-import { useAllUsers, useDeleteUser } from "../queries/useUserQueries";
+import { useUser } from "../../contexts/UserContext";
+import { useNotification } from "../../contexts/NotificationContext";
+import { useAllUsers, useDeleteUser } from "../../queries/useUserQueries";
 
 function UserManagement() {
   const { profile: currentUser } = useUser();

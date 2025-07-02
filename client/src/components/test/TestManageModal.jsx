@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTestById, useUpdateTest, useAddQuestionToTest, useDeleteQuestionFromTest } from "../../queries/useTestsQueries";
 import { X, Plus, Trash2, Edit } from "lucide-react";
-import Loading from "..//uiLoading";
+import Loading from "../ui/Loading";
 import ErrorPage from "../ui/ErrorPage";
 
 const TestManageModal = ({ testId, open, onClose }) => {

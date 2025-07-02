@@ -1,5 +1,5 @@
 import React from "react";
-import { useUpdateTest } from "../queries/useTestsQueries";
+import { useUpdateTest } from "../../queries/useTestsQueries";
 import { Loader, CheckCircle, ShieldOff } from "lucide-react";
 
 export default function PublishTestButton({ test }) {
