@@ -13,6 +13,10 @@ export default function ProfileSettings() {
     name: "",
     contactNumber: "",
     photo: null,
+    dob: "",
+    fatherName: "",
+    motherName: "",
+    altPhone: "",
   });
   const [photoPreview, setPhotoPreview] = useState(null);
 
@@ -22,6 +26,10 @@ export default function ProfileSettings() {
         name: profile.name || "",
         contactNumber: profile.contactNumber || "",
         photo: null,
+        dob: profile.dob || "",
+        fatherName: profile.fatherName || "",
+        motherName: profile.motherName || "",
+        altPhone: profile.altPhone || "",
       });
       setPhotoPreview(profile.photoUrl ? profile.photoUrl : null);
     }
@@ -58,7 +66,12 @@ export default function ProfileSettings() {
     if (formData.name !== (profile?.name || "")) updatedData.name = formData.name;
     if (formData.contactNumber !== (profile?.contactNumber || "")) updatedData.contactNumber = formData.contactNumber;
     if (formData.photo) updatedData.photo = formData.photo;
-
+    if (profile?.role === "student") {
+      if (formData.dob !== (profile?.dob || "")) updatedData.dob = formData.dob;
+      if (formData.fatherName !== (profile?.fatherName || "")) updatedData.fatherName = formData.fatherName;
+      if (formData.motherName !== (profile?.motherName || "")) updatedData.motherName = formData.motherName;
+      if (formData.altPhone !== (profile?.altPhone || "")) updatedData.altPhone = formData.altPhone;
+    }
     if (Object.keys(updatedData).length === 0) {
       showNotification("No changes to save.", "info");
       return;
@@ -156,6 +169,68 @@ export default function ProfileSettings() {
                   className="w-full border border-blue-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white text-gray-700"
                 />
               </div>
+              {profile?.role === "student" && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-blue-700" htmlFor="dob">
+                      Date of Birth
+                    </label>
+                    <input
+                      id="dob"
+                      name="dob"
+                      type="date"
+                      value={formData.dob}
+                      onChange={handleChange}
+                      placeholder="YYYY-MM-DD"
+                      disabled={updateProfileMutation.isPending}
+                      className="w-full border border-blue-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white text-gray-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-blue-700" htmlFor="fatherName">
+                      Father's Name
+                    </label>
+                    <input
+                      id="fatherName"
+                      name="fatherName"
+                      value={formData.fatherName}
+                      onChange={handleChange}
+                      placeholder="Father's Name"
+                      disabled={updateProfileMutation.isPending}
+                      className="w-full border border-blue-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white text-gray-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-blue-700" htmlFor="motherName">
+                      Mother's Name
+                    </label>
+                    <input
+                      id="motherName"
+                      name="motherName"
+                      value={formData.motherName}
+                      onChange={handleChange}
+                      placeholder="Mother's Name"
+                      disabled={updateProfileMutation.isPending}
+                      className="w-full border border-blue-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white text-gray-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-blue-700" htmlFor="altPhone">
+                      Alternative Mobile Number
+                    </label>
+                    <input
+                      id="altPhone"
+                      name="altPhone"
+                      type="tel"
+                      value={formData.altPhone}
+                      onChange={handleChange}
+                      placeholder="Alternative Mobile Number"
+                      disabled={updateProfileMutation.isPending}
+                      className="w-full border border-blue-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white text-gray-700"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="mt-6">

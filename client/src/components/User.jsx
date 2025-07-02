@@ -30,7 +30,10 @@ const User = () => {
     password: "",
     contactNumber: "",
     role: availableRoles[0]?.value || "",
-    school: "",
+    dob: "",
+    fatherName: "",
+    motherName: "",
+    altPhone: "",
   });
 
   useEffect(() => {
@@ -57,12 +60,15 @@ const User = () => {
 
     let payload = { ...form };
     if (payload.role === "student") {
-      if (!payload.school) {
-        showNotification("School Name is required for students.", "error");
+      if (!payload.dob || !payload.fatherName || !payload.motherName) {
+        showNotification("DOB, Father's Name, and Mother's Name are required for students.", "error");
         return;
       }
     } else {
-      delete payload.school;
+      delete payload.dob;
+      delete payload.fatherName;
+      delete payload.motherName;
+      delete payload.altPhone;
     }
 
     addUserMutation.mutate(payload, {
@@ -73,7 +79,10 @@ const User = () => {
           password: "",
           contactNumber: "",
           role: availableRoles[0].value,
-          school: "",
+          dob: "",
+          fatherName: "",
+          motherName: "",
+          altPhone: "",
         });
       },
     });
@@ -253,21 +262,69 @@ const User = () => {
               </select>
             </motion.div>
             {form.role === "student" && (
-              <motion.div variants={itemVariants}>
-                <label htmlFor="school" className="block text-sm font500 mb-1 sm:mb-2 text-gray-700">
-                  School Name
-                </label>
-                <input
-                  id="school"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                  name="school"
-                  value={form.school}
-                  onChange={handleChange}
-                  placeholder="Student school name"
-                  required
-                  disabled={addUserMutation.isPending}
-                />
-              </motion.div>
+              <>
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="dob" className="block text-sm font500 mb-1 sm:mb-2 text-gray-700">
+                    Date of Birth
+                  </label>
+                  <input
+                    id="dob"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    name="dob"
+                    type="date"
+                    value={form.dob}
+                    onChange={handleChange}
+                    placeholder="YYYY-MM-DD"
+                    required
+                    disabled={addUserMutation.isPending}
+                  />
+                </motion.div>
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="fatherName" className="block text-sm font500 mb-1 sm:mb-2 text-gray-700">
+                    Father's Name
+                  </label>
+                  <input
+                    id="fatherName"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    name="fatherName"
+                    value={form.fatherName}
+                    onChange={handleChange}
+                    placeholder="Father's Name"
+                    required
+                    disabled={addUserMutation.isPending}
+                  />
+                </motion.div>
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="motherName" className="block text-sm font500 mb-1 sm:mb-2 text-gray-700">
+                    Mother's Name
+                  </label>
+                  <input
+                    id="motherName"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    name="motherName"
+                    value={form.motherName}
+                    onChange={handleChange}
+                    placeholder="Mother's Name"
+                    required
+                    disabled={addUserMutation.isPending}
+                  />
+                </motion.div>
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="altPhone" className="block text-sm font500 mb-1 sm:mb-2 text-gray-700">
+                    Alternative Mobile Number
+                  </label>
+                  <input
+                    id="altPhone"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    name="altPhone"
+                    type="tel"
+                    value={form.altPhone}
+                    onChange={handleChange}
+                    placeholder="Alternative Mobile Number"
+                    disabled={addUserMutation.isPending}
+                  />
+                </motion.div>
+              </>
             )}
             <motion.button
               type="submit"
