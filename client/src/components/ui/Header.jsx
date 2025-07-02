@@ -23,7 +23,8 @@ const Header = () => {
     { name: 'How It Works', path: '/how-it-works' },
     { name: 'Scholarships', path: '/scholarships' },
     { name: 'Exams', path: '/exam-info' },
-    { name: 'Contact', path: '/contact' }
+    { name: 'Contact', path: '/contact' },
+    {name:'Global', path:'/global'}
   ];
 
   useEffect(() => {
