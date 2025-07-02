@@ -65,21 +65,21 @@ export const checkPaymentStatus = async (orderId) => {
 };
 
 export const getTestRankings = async (testId) => {
-  const response = await axiosInstance.get(`/tests/${testId}/rankings`);
-  return response.data;
-};
-
-export const getPublicTestById = async (testId) => {
-  const response = await axiosInstance.get(`/tests/public/${testId}`);
-  return response.data;
-};
-
-export const getPublicTest = async () => {
-  const response = await axiosInstance.get(`/tests/public`);
-  return response.data;
+  const response = await axiosInstance.get(`/tests/${testId}/rankings`, { responseType: 'blob' });
+  return response;
 };
 
 export const grantStudent = async ({ uid, amount }) => {
   const response = await axiosInstance.post('/tests/grant', { uid, amount });
+  return response.data;
+};
+
+export const getExamSessions = async () => {
+  const response = await axiosInstance.get('/tests/sessions');
+  return response.data;
+};
+
+export const createExamSession = async (sessionData) => {
+  const response = await axiosInstance.post('/tests/sessions', sessionData);
   return response.data;
 }; 

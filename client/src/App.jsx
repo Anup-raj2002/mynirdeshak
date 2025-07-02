@@ -22,7 +22,7 @@ import TestManagerDashboard from './pages/dashboards/TestManagerDashboard';
 import InstructorDashboard from './pages/dashboards/InstructorDashboard';
 import OrderSuccess from './pages/registration/OrderSuccess';
 import TermsAndConditions from './pages/Legal/TermsAndConditions';
-import RulesAndRegulations from './pages/Legal/RulesAndRegulations';
+import RulesAndRegulations from './pages/Legal/RulesandRegulations';
 
 function ScrollToTop() {
   const { pathname } = useLocation();

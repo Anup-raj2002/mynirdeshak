@@ -16,6 +16,7 @@ import { testAttemptValidationSchema } from '../schemas/testAttempt.validator'
 import { UserRoles } from '../schemas/user.validator';
 import { questionValidationSchema } from '../schemas/question.validator';
 import xlsx from 'xlsx';
+import { ExamSession } from '../models/examSession.model';
 
 export const getTests = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -576,41 +577,6 @@ export const PaymentHook = async (req: Request, res: Response) => {
   }
 };
 
-export const getPublicTestById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const { testId } = req.params;
-    const test = await Test.findById(testId).lean();
-    if (!test) {
-      return next(new NotFoundError('Test not found'));
-    }
-    const { questions, ...publicTest } = cleanMongoData(test);
-    res.status(200).json(publicTest);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getPublicTest = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const now = new Date();
-    const tests = await Test.find(
-      { isPublished: true, endDateTime: { $gt: now } },
-      { questions: 0 }
-    ).lean();
-    res.status(200).json(cleanMongoData(tests));
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const grantStudent = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { uid, amount } = req.body;
@@ -633,6 +599,34 @@ export const grantStudent = async (req: AuthRequest, res: Response, next: NextFu
     }
     const payment = await TestPayment.create({ userId: user._id, amount, method: 'GRANT' });
     res.status(201).json({ success: true, payment });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getExamSessions = async (_req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const sessions = await ExamSession.find({}, { _id: 1, commonName: 1, year: 1 })
+      .sort({ createdAt: -1 })
+      .lean();
+    res.status(200).json(sessions);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createExamSession = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { commonName, year } = req.body;
+    if (!commonName || !year) {
+      throw new BadRequestError('commonName and year are required');
+    }
+    const existing = await ExamSession.exists({ year }).lean();
+    if (existing) {
+      throw new ConflictError('Session for this year already exists');
+    }
+    const session = await ExamSession.create({ commonName, year });
+    res.status(201).json(session);
   } catch (error) {
     next(error);
   }

@@ -55,7 +55,7 @@ const photoFilter = (
 const handleUploadError = (
   err: Error,
   _req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   if (err instanceof multer.MulterError) {

@@ -9,6 +9,7 @@ import Loading from "../../components/ui/Loading";
 import ErrorPage from "../../components/ui/ErrorPage";
 import { Settings, FileText, User as UserIcon, BookOpen, UsersIcon,UserPlusIcon } from 'lucide-react';
 import GrantTest from "../../components/test/GrantTest";
+import SessionManager from '../../components/test/SessionManager';
 
 function CourseManagerDashboard() {
   const { profile: user, loading: userLoading, error: userError } = useUser();
@@ -25,6 +26,7 @@ function CourseManagerDashboard() {
     { label: "Profile", icon: UserIcon, key: "profile" },
     { label: "Settings", icon: Settings, key: "Settings" },
     { label: "Grant Student", icon: FileText, key: "grantStudent" },
+    { label: "Session Management", icon: FileText, key: "sessionManager" },
   ];
 
   return (
@@ -56,6 +58,7 @@ function CourseManagerDashboard() {
           {activeTab === "userManagement" && <UserManagement />}
           {activeTab === "Settings" && <AccountSettings />}
           {activeTab === "grantStudent" && <GrantTest />}
+          {activeTab === "sessionManager" && <SessionManager />}
         </div>
       </main>
     </div>

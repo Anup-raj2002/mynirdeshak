@@ -1,21 +1,36 @@
-import React, { useState } from "react";
-import { useCreateTest } from "../../queries/useTestsQueries";
+import React, { useState, useEffect } from "react";
+import { useCreateTest, useExamSessions } from "../../queries/useTestsQueries";
 import { useNotification } from "../../contexts/NotificationContext";
-import { Calendar, FileText, IndianRupee } from "lucide-react";
+import { Calendar, FileText } from "lucide-react";
 
 const initialForm = {
-  name: "",
   description: "",
+  stream: "",
+  sessionId: "",
   startDateTime: "",
-  endDateTime: "",
-  registrationEndDateTime: "",
-  price: "",
 };
+
+const STREAM_OPTIONS = [
+  { value: "PCM", label: "PCM (Physics, Chemistry, Maths)" },
+  { value: "PCB", label: "PCB (Physics, Chemistry, Biology)" },
+  { value: "PCMB", label: "PCMB (All Four Science Subjects)" },
+  { value: "Commerce", label: "Commerce (Accounts, Business, Economics)" },
+  { value: "Arts", label: "Arts / Humanities" },
+  { value: "Others", label: "Others (Vocational / ITI / Polytechnic / Open School)" },
+];
 
 const CreateTest = () => {
   const [form, setForm] = useState(initialForm);
   const { mutateAsync: createTest, isLoading } = useCreateTest();
   const { showNotification } = useNotification();
+  const { data: sessions, isLoading: sessionsLoading } = useExamSessions();
+
+  // Set default sessionId to latest session
+  useEffect(() => {
+    if (sessions && sessions.length > 0 && !form.sessionId) {
+      setForm((prev) => ({ ...prev, sessionId: sessions[0]._id }));
+    }
+  }, [sessions]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,25 +39,18 @@ const CreateTest = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Basic validation
-    if (!form.name || !form.description || !form.startDateTime || !form.endDateTime || !form.registrationEndDateTime || !form.price) {
-      showNotification("Please fill all fields.", "error");
-      return;
-    }
-    if (new Date(form.startDateTime) >= new Date(form.endDateTime)) {
-      showNotification("End time must be after start time.", "error");
-      return;
-    }
-    if (new Date(form.registrationEndDateTime) > new Date(form.startDateTime)) {
-      showNotification("Registration end must be before test start.", "error");
+    if (!form.description || !form.stream || !form.sessionId || !form.startDateTime) {
+      showNotification("Please fill all required fields.", "error");
       return;
     }
     try {
       const payload = {
-        ...form,
-        price: Number(form.price),
+        description: form.description,
+        stream: form.stream,
+        sessionId: form.sessionId,
+        startDateTime: form.startDateTime,
       };
-      const test = await createTest(payload);
+      await createTest(payload);
       showNotification("Test created! You can now add questions.", "success");
       setForm(initialForm);
     } catch (err) {
@@ -57,17 +65,6 @@ const CreateTest = () => {
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium mb-1">Test Name</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-            placeholder="Enter test name"
-            required
-          />
-        </div>
-        <div>
           <label className="block text-sm font-medium mb-1">Description</label>
           <textarea
             name="description"
@@ -79,64 +76,55 @@ const CreateTest = () => {
             required
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-1">
-              <Calendar className="w-4 h-4" /> Start Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              name="startDateTime"
-              value={form.startDateTime}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 flex items-center gap-1">
-              <Calendar className="w-4 h-4" /> End Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              name="endDateTime"
-              value={form.endDateTime}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              required
-            />
-          </div>
-        </div>
         <div>
-          <label className="block text-sm font-medium mb-1 flex items-center gap-1">
-            <Calendar className="w-4 h-4" /> Registration End Date & Time
-          </label>
-          <input
-            type="datetime-local"
-            name="registrationEndDateTime"
-            value={form.registrationEndDateTime}
+          <label className="block text-sm font-medium mb-1">Stream</label>
+          <select
+            name="stream"
+            value={form.stream}
             onChange={handleChange}
             className="w-full border rounded px-3 py-2"
             required
-          />
+          >
+            <option value="">Select Stream</option>
+            {STREAM_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Session</label>
+          <select
+            name="sessionId"
+            value={form.sessionId}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+            required
+            disabled={sessionsLoading}
+          >
+            <option value="">{sessionsLoading ? "Loading..." : "Select Session"}</option>
+            {sessions && sessions.map((session) => (
+              <option key={session._id} value={session._id}>
+                {session.commonName} ({session.year})
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1 flex items-center gap-1">
-            <IndianRupee className="w-4 h-4" /> Price (INR)
+            <Calendar className="w-4 h-4" /> Start Date & Time
           </label>
           <input
-            type="number"
-            name="price"
-            value={form.price}
+            type="datetime-local"
+            name="startDateTime"
+            value={form.startDateTime}
             onChange={handleChange}
             className="w-full border rounded px-3 py-2"
-            min={0}
             required
           />
         </div>
         <button
           type="submit"
-          className="bg-blue-600 text-white px-8 py-2 rounded w-full sm:w-auto float-right"
+          className="bg-blue-600 text-white px-8 py-2 rounded w-full sm:w-auto mt-4"
           disabled={isLoading}
         >
           {isLoading ? "Creating..." : "Create Test"}
