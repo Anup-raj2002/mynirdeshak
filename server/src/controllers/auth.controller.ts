@@ -27,19 +27,19 @@ export const newStudent = async (
     }
 
     await auth.setCustomUserClaims(req.user.uid, { role: UserRoles[0] });
-    const user = await auth.getUser(req.user.uid);
-    const { displayName, photoURL, phoneNumber } = user;
+    // const user = await auth.getUser(req.user.uid);  //TODO: Google login
+    // const { displayName, photoURL, phoneNumber } = user;
 
     const mUser = await User.findOne({ uid: req.user.uid }).lean();
     if (mUser) {
       throw new ConflictError('User already registered');
     }
 
+    const validated = await createStudentValidationSchema.parseAsync(req.body);
+
     await User.create({
       uid: req.user.uid,
-      name: displayName,
-      photoUrl: photoURL,
-      contactNumber: phoneNumber,
+      ...validated,
       role: UserRoles[0],
     });
     res.status(201).json({ message: 'Student role assigned and created' });
@@ -145,8 +145,6 @@ export const createUser = async (
 
     if (userDetail.role === UserRoles[0]) {
       userDetail = await createStudentValidationSchema.parseAsync(req.body);
-    } else {
-      delete (userDetail as any).school;
     }
 
     const { email, password, ...userData } = userDetail;

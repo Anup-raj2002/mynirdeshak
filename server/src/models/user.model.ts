@@ -8,7 +8,10 @@ export type IUser = Document & {
   photoUrl?: string;
   role: UserRole;
   contactNumber?: string;
-  school?: string;
+  dob?: string;
+  fatherName?: string;
+  motherName?: string;
+  altPhone?: string;
 };
 
 export const mongooseUserSchema = new Schema<IUser>(
@@ -24,7 +27,10 @@ export const mongooseUserSchema = new Schema<IUser>(
         message: (props) => `${props.value} is not a valid phone number!`,
       },
     },
-    school: { type: String },
+    dob: { type: String },
+    fatherName: { type: String },
+    motherName: { type: String },
+    altPhone: { type: String },
   },
   {
     timestamps: true,

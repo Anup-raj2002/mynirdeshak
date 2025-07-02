@@ -77,4 +77,9 @@ export const getPublicTestById = async (testId) => {
 export const getPublicTest = async () => {
   const response = await axiosInstance.get(`/tests/public`);
   return response.data;
+};
+
+export const grantStudent = async ({ uid, amount }) => {
+  const response = await axiosInstance.post('/tests/grant', { uid, amount });
+  return response.data;
 }; 

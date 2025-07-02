@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth';
-import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError } from '../middleware/errorHandler';
+import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError, AppError } from '../middleware/errorHandler';
 import { Test } from '../models/test.model';
 import { TestAttempt } from '../models/testAttempt.model';
 import { Question } from '../models/question.model';
@@ -579,6 +579,33 @@ export const getPublicTest = async (
       { questions: 0 }
     ).lean();
     res.status(200).json(cleanMongoData(tests));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const grantStudent = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { uid, amount } = req.body;
+    if (!uid || !amount) {
+      throw new AppError('uid and amount are required', 400, true);
+    }
+    if (typeof amount !== 'number' || amount <= 0) {
+      throw new AppError('Amount must be a positive number', 400, true);
+    }
+    if (!['admin', 'test-manager'].includes(req.user?.role || "")) {
+      throw new AuthorizationError();
+    }
+    const user = await User.findOne({ uid }).select('_id').lean();
+    if (!user) {
+      throw new NotFoundError('Student not found');
+    }
+    const existing = await TestPayment.findOne({ userId: user._id, method: 'GRANT' });
+    if (existing) {
+      throw new ConflictError('Grant already exists for this user');
+    }
+    const payment = await TestPayment.create({ userId: user._id, amount, method: 'GRANT' });
+    res.status(201).json({ success: true, payment });
   } catch (error) {
     next(error);
   }

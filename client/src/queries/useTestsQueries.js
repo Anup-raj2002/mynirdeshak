@@ -150,7 +150,6 @@ export const useCheckPaymentStatus = (orderId) => {
   return useQuery({
     queryKey: testKeys.payment(orderId),
     queryFn: () => testApi.checkPaymentStatus(orderId),
-    enabled: !!orderId,
   });
 };
 

@@ -8,6 +8,7 @@ import AccountSettings from "../components/AccountSettings.jsx";
 import Loading from "../components/Loading.jsx";
 import ErrorPage from "../components/ErrorPage.jsx";
 import { Settings, FileText, User as UserIcon, BookOpen, Menu } from 'lucide-react';
+import GrantStudent from "./GrantStudent.jsx";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("viewTests");
@@ -20,15 +21,16 @@ const AdminDashboard = () => {
 
   const sidebarItems = [
     { label: "View All Tests", icon: BookOpen, key: "viewTests" },
-    { label: "Profile", icon: UserIcon, key: "profile" },
     { label: "Add User", icon: UserIcon, key: "addUser" },
     { label: "User Management", icon: Settings, key: "userManagement" },
+    { label: "Profile", icon: UserIcon, key: "profile" },
     { label: "Settings", icon: Settings, key: "Settings" },
+    { label: "Grant Student", icon: FileText, key: "grantStudent" },
   ];
 
   const handleTabChange = (key) => {
     setActiveTab(key);
-    setIsSidebarOpen(false); // Close sidebar on mobile
+    setIsSidebarOpen(false);
   };
 
   return (
@@ -92,6 +94,7 @@ const AdminDashboard = () => {
           )}
           {activeTab === "userManagement" && <UserManagement />}
           {activeTab === "Settings" && <AccountSettings />}
+          {activeTab === "grantStudent" && <GrantStudent />}
         </div>
       </main>
     </div>

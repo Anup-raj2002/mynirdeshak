@@ -17,7 +17,7 @@ export default function StepDeclarationPayment({ formData, onChange }) {
         <div className="space-y-4 text-sm text-gray-700">
           <p>1. All information provided must be true and correct to the best of your knowledge.</p>
           <p>2. Any false information may lead to disqualification.</p>
-          <p>3. Please read the full rules and guidelines on our <a href="/rules" target="_blank" className="text-blue-600 underline">Rules & Guidelines</a> page.</p>
+          <p>3. Please read the full rules and guidelines on our <a href="/terms" target="_blank" className="text-blue-600 underline">Rules & Guidelines</a> page.</p>
           <p>4. By submitting, you agree to our terms and privacy policy.</p>
         </div>
       </div>

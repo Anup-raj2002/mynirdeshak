@@ -1,18 +1,34 @@
-import sgMail, { MailDataRequired } from "@sendgrid/mail";
-// import { config } from "../config/variables.config";
+import nodemailer from "nodemailer"
+import { config } from "../config/variables.config";
 
-// sgMail.setApiKey(config.sendGridApi);
+type SendMailOptions = {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  from?: string;
+};
 
-// subject: 'Payment Successful - Test Registration',
-//           html: `<p>Hi ${mUser.name || ''},</p>
-//             <p>Your payment for the test (ID: ${testId}) was successful.</p>
-//             <p>Thank you for registering. You will receive further instructions soon.</p>
-//             <p>Regards,<br/>The Team</p>`
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: config.userName,
+    pass: config.pass,
+  },
+});
 
-export async function sendMail(options: MailDataRequired): Promise<void> {
+export async function sendMail(options: SendMailOptions): Promise<void> {
+  const mailOptions = {
+    from: config.userName,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+    text: options.text,
+  };
+
   try {
-    await sgMail.send(options);
+    await transporter.sendMail(mailOptions);
   } catch (mailErr) {
-    console.error('SendGrid mail error:', mailErr);
+    console.error("Gmail SMTP mail error:", mailErr);
   }
-} 
+}

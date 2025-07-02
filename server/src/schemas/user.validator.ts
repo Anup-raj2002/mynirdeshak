@@ -9,7 +9,11 @@ export const baseUserValidationSchema = z.object({
     .trim(),
   photoUrl: z.string().optional(),
   contactNumber: z.string()
-    .regex(/^(\+91|0)?[6-9]\d{9}$/, 'Invalid phone number format').optional(),
+  .regex(/^(\+91|0)?[6-9]\d{9}$/, 'Invalid phone number format').optional(),
+  dob: z.string().optional(),
+  fatherName: z.string().optional(),
+  motherName: z.string().optional(),
+  altPhone: z.string().optional(),
 });
 
 export const createUserValidationSchema = baseUserValidationSchema.extend({
@@ -22,7 +26,10 @@ export const createUserValidationSchema = baseUserValidationSchema.extend({
 });
 
 const studentDetailsValidationSchema = z.object({
-  school: z.string().min(1, "School name is needed"),
+  dob: z.string().min(1, 'Date of birth is required'),
+  fatherName: z.string().min(1, 'Father name is required'),
+  motherName: z.string().min(1, 'Mother name is required'),
+  altPhone: z.string().min(1, 'Alternative phone is required'),
 });
 
 export const createStudentValidationSchema = createUserValidationSchema.merge(studentDetailsValidationSchema);

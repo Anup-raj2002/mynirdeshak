@@ -17,6 +17,7 @@ import {
   PaymentHook,
   getPublicTest,
   getPublicTestById,
+  grantStudent,
 } from '../controllers/test.controller';
 
 const testRouter = Router();
@@ -36,6 +37,7 @@ testRouter.post('/:testId/attempt/submit', authorize(['student']), submitTestAtt
 testRouter.get('/:testId/result', authorize(['student']), getTestResult);
 
 testRouter.post('/', authorize(['instructor']), createTest);
+testRouter.post('/grant', authorize(['admin', 'test-manager']), grantStudent);
 
 testRouter.use(authorize(['admin', 'test-manager', 'instructor']));
 testRouter.get('/:testId', getTestById);
