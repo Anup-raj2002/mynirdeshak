@@ -39,5 +39,6 @@ testSchema.index({ sessionId: 1 });
 testSchema.index({ stream: 1 });
 testSchema.index({ startDateTime: 1 });
 testSchema.index({ isPublished: 1 });
+testSchema.index({ createdAt: -1});
 
 export const Test = mongoose.model<ITest>('Test', testSchema); 

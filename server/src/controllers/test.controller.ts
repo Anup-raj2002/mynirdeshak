@@ -40,6 +40,7 @@ export const getTests = async (req: AuthRequest, res: Response, next: NextFuncti
     // Fetch tests, populate sessionId for commonName
     const tests = await Test.find(query)
       .populate('sessionId', 'commonName year')
+      .sort({createdAt: -1})
       .lean();
 
     if (!tests.length) {
