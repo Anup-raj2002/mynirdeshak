@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth';
-import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError, AppError, BadRequestError } from '../middleware/errorHandler';
+import { AuthenticationError, AuthorizationError, NotFoundError, ConflictError, BadRequestError } from '../middleware/errorHandler';
 import { Test } from '../models/test.model';
 import { TestAttempt } from '../models/testAttempt.model';
 import { Question } from '../models/question.model';
@@ -14,6 +14,8 @@ import { config } from '../config/variables.config';
 import { v4 as uuid } from 'uuid';
 import { testAttemptValidationSchema } from '../schemas/testAttempt.validator'
 import { UserRoles } from '../schemas/user.validator';
+import { questionValidationSchema } from '../schemas/question.validator';
+import xlsx from 'xlsx';
 
 export const getTests = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -141,9 +143,7 @@ export const deleteTest = async (
     if (req.user?.role === 'instructor' && !test.instructorId.toString() === mUser.id) {
       throw new AuthorizationError('You do not have permission to delete this test');
     }
-    // Collect all question IDs from all sections
-    const allQuestionIds = (test.sections || []).flatMap((section: any) => section.questions || []);
-    await Question.deleteMany({ _id: { $in: allQuestionIds } });
+    await Question.deleteMany({ testId });
     await TestAttempt.deleteMany({ testId });
     await Test.findByIdAndDelete(testId);
     res.status(204).send();
@@ -168,7 +168,9 @@ export const addQuestionToTest = async (req: AuthRequest, res: Response, next: N
     if (sectionObj.questions.length >= 25) {
       throw new BadRequestError('Section already has 25 questions.');
     }
-    const newQuestion = await Question.create(questionData);
+    // Validate question data
+    const validatedQuestion = await questionValidationSchema.parseAsync(questionData);
+    const newQuestion = await Question.create(validatedQuestion);
     sectionObj.questions.push((newQuestion as any)._id);
     await test.save();
     res.status(201).json({
@@ -191,12 +193,11 @@ export const deleteQuestionFromTest = async (req: AuthRequest, res: Response, ne
     }
     const test = await Test.findById(testId);
     if (!test) throw new NotFoundError('Test not found');
-    // Enforce 100-minute window from startDateTime
     const now = new Date();
     const testStart = new Date(test.startDateTime);
-    const testEnd = new Date(testStart.getTime() + 100 * 60000); // 100 minutes in ms
+    const testEnd = new Date(testStart.getTime() + 100 * 60000); 
     if (now >= testStart && now <= testEnd) {
-      return res.status(403).json({ message: 'Cannot delete questions during the test window (100 minutes from start time).' });
+      throw new AuthorizationError('Cannot delete questions during the test');
     }
     const sectionObj = test.sections.find(s => s.name === section);
     if (!sectionObj) {
@@ -227,9 +228,12 @@ export const submitTestAttempt = async (
     if (!test) return next(new NotFoundError('Test not found'));
 
     const now = new Date();
-    if (now < test.startDateTime) {
+    const testStart = new Date(test.startDateTime);
+    const testEnd = new Date(testStart.getTime() + 100 * 60000); // 100 minutes in ms
+    if (now < testStart || now > testEnd) {
       return next(new AuthorizationError('Test is not available at this time.'));
     }
+    const FIXED_POINTS = 2;
     // Flatten all questions from all sections
     const allQuestions = test.sections.flatMap((section: any) => section.questions);
     let score = 0;
@@ -244,22 +248,25 @@ export const submitTestAttempt = async (
       }
       const originalIndex = answer.optionMap[answer.selectedOption];
       const isCorrect = originalIndex === (question as any).correctAnswer;
-      if (isCorrect) score += (question as any).points;
+      if (isCorrect) {
+        score += FIXED_POINTS;
+      } else {
+        score -= (1/3);
+      }
       return {
         questionId: answer.questionId,
         selectedOption: answer.selectedOption,
         isCorrect,
       };
     }).filter(Boolean);
-    const totalPoints = allQuestions.reduce((acc: any, q: any) => acc + (q as any).points, 0);
-    const percentageScore = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
+    // No normalization, use raw score
     let attempt = await TestAttempt.findOne({ testId: testId, userId: mUser._id });
     if (!attempt) {
       attempt = new TestAttempt({
         testId,
         userId: mUser._id,
         answers: validatedData.answers,
-        score: percentageScore,
+        score: score,
         completedAt: now,
       });
     } else if (attempt.completedAt) {
@@ -270,12 +277,12 @@ export const submitTestAttempt = async (
         selectedOption: a.selectedOption,
         optionMap: a.optionMap,
       }));
-      attempt.score = percentageScore;
+      attempt.score = score;
       attempt.completedAt = now;
     }
     await attempt.save();
     res.status(200).json({
-      score: percentageScore,
+      score,
       answers: gradedAnswers,
     });
   } catch (error) {
@@ -293,9 +300,9 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
       .populate({ path: 'sections.questions', model: 'Question' })
       .lean();
     if (!test) throw new NotFoundError('Test not found');
-
+    const testEndTime = new Date(new Date(test.startDateTime).getTime() + 100 * 60000);
     const now = new Date();
-    if (now < test.startDateTime) {
+    if (now < test.startDateTime || now > testEndTime) {
       return next(new AuthorizationError('Test is not available at this time.'));
     }
     let attempt = await TestAttempt.findOne({ testId, userId });
@@ -326,8 +333,7 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
             _id: q._id,
             question: q.question,
             options: shuffledOptions,
-            points: q.points,
-            optionMap: optionIndices, // send this to frontend
+            optionMap: optionIndices,
           };
         });
       return {
@@ -339,6 +345,7 @@ export const startTestAttempt = async (req: AuthRequest, res: Response, next: Ne
       testId: test._id,
       description: test.description,
       startDateTime: test.startDateTime,
+      endDateTime: testEndTime,
       sections: shuffledSections,
     });
   } catch (error) {
@@ -397,65 +404,17 @@ export const updateTest = async (
     }
     if (updateData.description !== undefined) test.description = updateData.description;
     if (updateData.isPublished !== undefined) test.isPublished = updateData.isPublished;
-    if (updateData.sessionId !== undefined) test.sessionId = updateData.sessionId;
+    if (updateData.sessionId !== undefined) test.sessionId = new Types.ObjectId(updateData.sessionId);
     if (updateData.stream !== undefined) test.stream = updateData.stream;
-    if (updateData.sections !== undefined) test.sections = updateData.sections;
+    if (updateData.sections !== undefined) {
+      test.sections = updateData.sections.map((section: any) => ({
+        name: section.name,
+        questions: (section.questions || []).map((q: any) => new Types.ObjectId(q)),
+      }));
+    }
     if (updateData.startDateTime !== undefined) test.startDateTime = updateData.startDateTime;
     await test.save();
     res.json(cleanMongoData(test.toJSON()));
-  } catch (error) {
-    next(error);
-  }
-};
-
-
-export const getTestAnalytics = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { testId } = req.params;
-    
-    const totalStudents = await TestPayment.countDocuments({ testId });
-    
-    const totalSales = await TestPayment.aggregate([
-      { $match: { testId: new Types.ObjectId(testId), method: 'ONLINE' } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    
-    const byWeek = await TestPayment.aggregate([
-      { $match: { testId: new Types.ObjectId(testId) } },
-      { $group: {
-        _id: { $isoWeek: '$createdAt' },
-        count: { $sum: 1 },
-        sales: { $sum: '$amount' }
-      } },
-      { $sort: { '_id': 1 } }
-    ]);
-    
-    const byYear = await TestPayment.aggregate([
-      { $match: { testId: new Types.ObjectId(testId) } },
-      { $group: {
-        _id: { $year: '$createdAt' },
-        count: { $sum: 1 },
-        sales: { $sum: '$amount' }
-      } },
-      { $sort: { '_id': 1 } }
-    ]);
-    
-    const byQuarter = await TestPayment.aggregate([
-      { $match: { testId: new Types.ObjectId(testId) } },
-      { $group: {
-        _id: { year: { $year: '$createdAt' }, quarter: { $ceil: { $divide: [{ $month: '$createdAt' }, 3] } } },
-        count: { $sum: 1 },
-        sales: { $sum: '$amount' }
-      } },
-      { $sort: { '_id.year': 1, '_id.quarter': 1 } }
-    ]);
-    res.json({
-      totalStudents,
-      totalSales: totalSales[0]?.total || 0,
-      byWeek,
-      byYear,
-      byQuarter
-    });
   } catch (error) {
     next(error);
   }
@@ -465,7 +424,7 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
   try {
     const { testId } = req.params;
     const attempts = await TestAttempt.find({ testId, completedAt: { $ne: null } })
-      .populate('userId', 'name uid')
+      .populate('userId', 'name uid fatherName motherName contactNumber')
       .lean();
     attempts.sort((a: any, b: any) => {
       if (b.score !== a.score) return b.score - a.score;
@@ -487,25 +446,26 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
         lastTime = att.completedAt?.toISOString();
         sameRankCount = 1;
       }
-     
-      // if (att.userId && (att.userId as any).uid) {
-      //   const firebaseUser = await auth.getUser((att.userId as any).uid);
-      //   if (firebaseUser.email) {
-      //     sendMail({
-      //       to: firebaseUser.email,
-      //       subject: `Your Rank for Test ${testId}`,
-      //       text: `Hi ${firebaseUser.displayName || ''},\n\nYour rank for the test is ${att.rank}. Your score: ${att.score}.\n\nThank you for participating!`,
-      //     });
-      //   }
-      // }
     }
-    const ranking = attempts.map((att: any) => ({
-      user: att.userId,
-      score: att.score,
-      completedAt: att.completedAt,
-      rank: att.rank,
-    }));
-    res.status(200).json(ranking);
+    const data = [
+      ['uid', 'rank', 'name', 'score', 'father name', 'mother name', 'contact number'],
+      ...attempts.map((att: any) => [
+        att.userId?.uid || '',
+        att.rank,
+        att.userId?.name || '',
+        att.score,
+        att.userId?.fatherName || '',
+        att.userId?.motherName || '',
+        att.userId?.contactNumber || '',
+      ])
+    ];
+    const ws = xlsx.utils.aoa_to_sheet(data);
+    const wb = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(wb, ws, 'Rankings');
+    const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Disposition', `attachment; filename="test-rankings-${testId}.xlsx"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buf);
   } catch (error) {
     next(error);
   }

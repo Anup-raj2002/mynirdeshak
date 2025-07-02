@@ -5,7 +5,6 @@ export interface IQuestion extends Document {
   question: string;
   options: string[];
   correctAnswer: number;
-  points: number;
 }
 
 export const questionSchema = new Schema<IQuestion>({
@@ -27,7 +26,6 @@ export const questionSchema = new Schema<IQuestion>({
       message: 'Correct answer index must match options length.',
     },
   },
-  points: { type: Number, default: 1, min: 1 },
   }, {
     timestamps: true
   }
