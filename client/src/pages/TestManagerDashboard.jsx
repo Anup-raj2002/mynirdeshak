@@ -7,7 +7,7 @@ import ProfileSettings from "../components/ProfileSettings.jsx";
 import AccountSettings from "../components/AccountSettings.jsx";
 import Loading from "../components/Loading.jsx";
 import ErrorPage from "../components/ErrorPage.jsx";
-import { Settings, FileText, User as UserIcon, BookOpen } from 'lucide-react';
+import { Settings, FileText, User as UserIcon, BookOpen, UsersIcon,UserPlusIcon } from 'lucide-react';
 import GrantStudent from "./GrantStudent.jsx";
 
 function CourseManagerDashboard() {
@@ -20,8 +20,8 @@ function CourseManagerDashboard() {
 
   const sidebarItems = [
     { label: "View All Tests", icon: BookOpen, key: "viewTests" },
-    { label: "Add User", icon: UserIcon, key: "addUser" },
-    { label: "User Management", icon: Settings, key: "userManagement" },
+    { label: "Add User", icon: UserPlusIcon, key: "addUser" },
+    { label: "User Management", icon: UsersIcon, key: "userManagement" },
     { label: "Profile", icon: UserIcon, key: "profile" },
     { label: "Settings", icon: Settings, key: "Settings" },
     { label: "Grant Student", icon: FileText, key: "grantStudent" },
