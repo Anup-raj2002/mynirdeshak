@@ -56,6 +56,8 @@ export default function TestTakingPage() {
   const [examStarted, setExamStarted] = useState(false);
   const [finalSubmitted, setFinalSubmitted] = useState(false);
   const [startError, setStartError] = useState(null);
+  const [canAcknowledge, setCanAcknowledge] = useState(false);
+  const [ackTooltip, setAckTooltip] = useState("");
   const sectionMeta = attempt ? getSectionMeta(attempt.stream) : test ? getSectionMeta(test.stream) : [];
 
   // Load answers from localStorage
@@ -68,18 +70,20 @@ export default function TestTakingPage() {
 
   // Set initial countdowns using Date.now()
   useEffect(() => {
-    if (!attempt) return;
+    if (!test) return;
     const now = Date.now();
-    const start = new Date(attempt.startDateTime).getTime();
+    const start = new Date(test.startDateTime).getTime();
     const entryTime = start - EARLY_ENTRY;
+    setCanAcknowledge(now >= start);
     if (now < entryTime) {
-      setGlobalCountdown(entryTime - now);
+      navigate('/dashboard/student', {replace: true});
+      showNotification("Test isn't started yet.", "info");
     } else if (now < start) {
       setGlobalCountdown(start - now);
     } else {
       setExamStarted(true);
     }
-  }, [attempt]);
+  }, [test]);
 
   // Global timer
   useEffect(() => {
@@ -94,6 +98,14 @@ export default function TestTakingPage() {
         return prev - 1000;
       });
     }, 1000);
+    const now = Date.now();
+    const start = new Date(test.startDateTime).getTime();
+    setCanAcknowledge(now >= start);
+    if (now < start) {
+      setAckTooltip(`You can start the exam at ${toISTString(start)}`);
+    } else {
+      setAckTooltip("");
+    }
     return () => clearInterval(i);
   }, [globalCountdown]);
 
@@ -178,9 +190,24 @@ export default function TestTakingPage() {
     setUserAnswers((p) => ({ ...p, [qId]: opt }));
   }, []);
 
+  // Prevent refresh/navigation during the test
+  useEffect(() => {
+    if (!examStarted) return;
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [examStarted]);
+
   const handleAcknowledge = async () => {
     setStartError(null);
     try {
+      // Enter fullscreen before starting attempt
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      }
       const d = await startAttempt(testId);
       setAttempt(d);
     } catch (err) {
@@ -202,8 +229,8 @@ export default function TestTakingPage() {
     attempt.sections.forEach((s) =>
       s.questions.forEach((q) =>
         ans.push({
-          questionId: q._id,
-          selectedOption: userAnswers[q._id],
+          questionId: q._id || q.id,
+          selectedOption: userAnswers[q._id || q.id],
           optionMap: q.optionMap,
         })
       )
@@ -237,7 +264,7 @@ export default function TestTakingPage() {
     return (
       <div className="w-full min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900">
         <div className="w-full bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 text-white py-4 px-6 text-2xl font-bold flex flex-col sm:flex-row sm:items-center justify-between shadow-lg">
-          <span>{test?.sessionId?.commonName || test?.name || 'Exam'}</span>
+          <span>{test?.sessionId?.commonName || 'Exam'}</span>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <span className="text-base font-normal">{test?.sessionId?.year}</span>
             <span className="ml-4 font-mono text-lg flex items-center gap-2"><Clock size={18} />{formatTime(globalCountdown)}</span>
@@ -272,12 +299,16 @@ export default function TestTakingPage() {
             </ul>
             {startError && <div className="text-red-400 mb-2">{startError}</div>}
             <button
-              className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 shadow-xl w-full mt-4"
+              className={`bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 shadow-xl w-full mt-4 ${!canAcknowledge ? 'opacity-60 cursor-not-allowed' : ''}`}
               onClick={handleAcknowledge}
-              disabled={startingAttempt}
+              disabled={startingAttempt || !canAcknowledge}
+              title={!canAcknowledge ? ackTooltip : ''}
             >
               {startingAttempt ? 'Starting Exam...' : 'I have read and understood the instructions'}
             </button>
+            {!canAcknowledge && (
+              <div className="text-sm text-blue-100 mt-2 text-center">{ackTooltip}</div>
+            )}
           </div>
         </div>
         <WarningModal
@@ -302,12 +333,10 @@ export default function TestTakingPage() {
     <div className="w-full min-h-screen flex flex-col bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900">
       <div className="w-full bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 text-white py-4 px-6 text-2xl font-bold flex flex-col sm:flex-row sm:items-center justify-between shadow-lg">
         <span>
-          {attempt.sessionId?.commonName || attempt.name}
-          {" — "}
-          Section {sectionLabel} ({section.name})
+          {test.sessionId?.commonName || attempt.name}
         </span>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <span className="text-base font-normal">{attempt.sessionId?.year}</span>
+          <span className="text-base font-normal">{test.sessionId?.year}</span>
           <span className="ml-4 font-mono text-lg flex items-center gap-2"><Clock size={18} />{formatTime(sectionCountdown)}</span>
         </div>
       </div>
@@ -315,10 +344,9 @@ export default function TestTakingPage() {
         <div className="w-full max-w-3xl p-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl mt-8">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <div className="font-bold text-lg text-blue-100 drop-shadow">Section {sectionLabel} ({section.name})</div>
+              <div className="font-bold text-lg text-blue-100 drop-shadow">Section {sectionLabel}</div>
             </div>
             <div className="text-right">
-              <div className="font-semibold text-blue-100">{attempt.name}</div>
               <div className="text-xs text-blue-200">Stream: {attempt.stream}</div>
               <div className="text-xs text-blue-200 mt-2">Answered: {answeredCount}/{totalQ}</div>
             </div>
