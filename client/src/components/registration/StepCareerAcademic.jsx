@@ -21,7 +21,25 @@ export default function StepCareerAcademic({ formData, onChange, errors = {} }) 
         <div><label className="block text-sm font-medium text-gray-700 mb-2">Year of Passing *</label><input type="number" name="yearOfPassing" value={formData.yearOfPassing} onChange={onChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white" required />{errors.yearOfPassing && <div className="text-xs text-red-600 mt-1">{errors.yearOfPassing}</div>}</div>
         <div><label className="block text-sm font-medium text-gray-700 mb-2">Board Name *</label><input type="text" name="board" value={formData.board} onChange={onChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white" required />{errors.board && <div className="text-xs text-red-600 mt-1">{errors.board}</div>}</div>
         <div><label className="block text-sm font-medium text-gray-700 mb-2">School Name *</label><input type="text" name="school" value={formData.school} onChange={onChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white" required />{errors.school && <div className="text-xs text-red-600 mt-1">{errors.school}</div>}</div>
-        <div><label className="block text-sm font-medium text-gray-700 mb-2">Stream *</label><select name="stream" value={formData.stream} onChange={onChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white" required><option value="">Select</option><option value="pcm">PCM</option><option value="pcb">PCB</option><option value="pcmb">PCMB</option><option value="commerce">Commerce</option><option value="humanities">Humanities</option><option value="other">Other</option></select>{errors.stream && <div className="text-xs text-red-600 mt-1">{errors.stream}</div>}</div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Stream *</label>
+          <select
+            name="stream"
+            value={formData.stream}
+            onChange={onChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+            required
+          >
+            <option value="">Select</option>
+            <option value="PCM">PCM</option>
+            <option value="PCB">PCB</option>
+            <option value="PCMB">PCMB</option>
+            <option value="Commerce">Commerce</option>
+            <option value="Arts">Arts</option>
+            <option value="Others">Others</option>
+          </select>
+          {errors.stream && <div className="text-xs text-red-600 mt-1">{errors.stream}</div>}
+        </div>
       </div>
     </motion.div>
   );

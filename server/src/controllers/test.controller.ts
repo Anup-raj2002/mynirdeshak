@@ -20,12 +20,9 @@ import { ExamSession } from '../models/examSession.model';
 
 export const getTests = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { name, description } = req.query;
     const { role, uid } = req.user!;
 
     const query: any = {};
-    if (name) query.name = { $regex: name, $options: 'i' };
-    if (description) query.description = { $regex: description, $options: 'i' };
 
     const user = await User.findOne({ uid }).select('_id stream').lean();
     if (!user) throw new NotFoundError("User not found");
@@ -34,6 +31,7 @@ export const getTests = async (req: AuthRequest, res: Response, next: NextFuncti
     if (role === 'instructor') {
       query.instructorId = user._id;
     } else if (role === 'student') {
+      query.isPublished = true;
       query.stream = (user as any).stream;
     }
 
@@ -45,24 +43,6 @@ export const getTests = async (req: AuthRequest, res: Response, next: NextFuncti
 
     if (!tests.length) {
       res.status(200).json([]);
-      return;
-    }
-
-    // For students, strip question details
-    if (role === 'student') {
-      const studentTests = tests.map(test => ({
-        _id: test._id,
-        description: test.description,
-        stream: test.stream,
-        session: test.sessionId,
-        startDateTime: test.startDateTime,
-        isPublished: test.isPublished,
-        sections: test.sections.map((s: any) => ({
-          name: s.name,
-          questionCount: s.questions.length
-        })),
-      }));
-      res.status(200).json(studentTests);
       return;
     }
 
@@ -163,6 +143,11 @@ export const addQuestionToTest = async (req: AuthRequest, res: Response, next: N
     }
     const test = await Test.findById(testId);
     if (!test) throw new NotFoundError('Test not found');
+    const now = new Date();
+    const testStart = new Date(test.startDateTime);
+    if (now >= testStart && test.isPublished) {
+      throw new AuthorizationError('Cannot add questions after test start');
+    }
     const sectionObj = test.sections.find(s => s.name === section);
     if (!sectionObj) {
       throw new BadRequestError('Section not found in test.');
@@ -197,9 +182,8 @@ export const deleteQuestionFromTest = async (req: AuthRequest, res: Response, ne
     if (!test) throw new NotFoundError('Test not found');
     const now = new Date();
     const testStart = new Date(test.startDateTime);
-    const testEnd = new Date(testStart.getTime() + 100 * 60000); 
-    if (now >= testStart && now <= testEnd) {
-      throw new AuthorizationError('Cannot delete questions during the test');
+    if (now >= testStart && test.isPublished) {
+      throw new AuthorizationError('Cannot delete questions after test start');
     }
     const sectionObj = test.sections.find(s => s.name === section);
     if (!sectionObj) {
@@ -374,7 +358,7 @@ export const getTestResult = async (
       return next(new NotFoundError('No attempt found for this test'));
     }
     return res.status(200).json({
-      score: attempt.score,
+      expectedScore: attempt.score,
       answers: attempt.answers,
       completedAt: attempt.completedAt,
     });
@@ -398,6 +382,11 @@ export const updateTest = async (
     const test = await Test.findById(testId);
     if (!test) {
       throw new NotFoundError('Test not found');
+    }
+    const now = new Date();
+    const testStart = new Date(test.startDateTime);
+    if (now >= testStart && test.isPublished) {
+      throw new AuthorizationError('Cannot update after test start');
     }
     const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
     if(!mUser) throw new AuthenticationError();
@@ -425,49 +414,106 @@ export const updateTest = async (
 export const getTestRankings = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { testId } = req.params;
-    const attempts = await TestAttempt.find({ testId, completedAt: { $ne: null } })
-      .populate('userId', 'name uid fatherName motherName contactNumber')
-      .lean();
-    attempts.sort((a: any, b: any) => {
+
+    const attempts = await TestAttempt.aggregate([
+      {
+        $match: {
+          testId: new Types.ObjectId(testId),
+          completedAt: { $ne: null }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $lookup: {
+          from: 'tests',
+          localField: 'testId',
+          foreignField: '_id',
+          as: 'test'
+        }
+      },
+      { $unwind: '$test' },
+      {
+        $lookup: {
+          from: 'examsessions',
+          localField: 'test.sessionId',
+          foreignField: '_id',
+          as: 'session'
+        }
+      },
+      { $unwind: '$session' },
+      {
+        $project: {
+          score: 1,
+          completedAt: 1,
+          'user.name': 1,
+          'user.uid': 1,
+          'user.fatherName': 1,
+          'user.motherName': 1,
+          'user.contactNumber': 1,
+          'test.stream': 1,
+          'session.year': 1,
+          'session.commonName': 1
+        }
+      }
+    ]);
+
+    attempts.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
-      return new Date(a.completedAt).getTime() - new Date(b.completedAt).getTime();
+      return new Date(a.completedAt || 0).getTime() - new Date(b.completedAt || 0).getTime();
     });
+
     let currentRank = 1;
-    let lastScore = null;
-    let lastTime = null;
-    let sameRankCount = 0;
+    let lastScore = 0;
+    let lastTime = 0;
     for (let i = 0; i < attempts.length; i++) {
       const att = attempts[i];
-      if (lastScore === att.score && lastTime === att.completedAt?.toISOString()) {
+      const currentCompletedTime = new Date(att.completedAt || 0).getTime();
+      if (lastScore === att.score && lastTime === currentCompletedTime) {
         att.rank = currentRank;
-        sameRankCount++;
       } else {
         currentRank = i + 1;
         att.rank = currentRank;
         lastScore = att.score;
-        lastTime = att.completedAt?.toISOString();
-        sameRankCount = 1;
+        lastTime = currentCompletedTime;
       }
     }
-    const data = [
-      ['uid', 'rank', 'name', 'score', 'father name', 'mother name', 'contact number'],
-      ...attempts.map((att: any) => [
-        att.userId?.uid || '',
-        att.rank,
-        att.userId?.name || '',
-        att.score,
-        att.userId?.fatherName || '',
-        att.userId?.motherName || '',
-        att.userId?.contactNumber || '',
+
+    const stream = attempts[0]?.test?.stream || 'unknown';
+    const sessionYear = attempts[0]?.session?.year || 'unknown';
+    const commonName = attempts[0]?.session?.commonName || 'Rankings';
+
+    const sheetData = [
+      [commonName],
+      ['UID', 'Rank', 'Name', 'Score', 'Father Name', 'Mother Name', 'Contact Number'],
+      ...attempts.map(att => [
+        att.user.uid || '',
+        att.rank || '',
+        att.user.name || '',
+        att.score || '',
+        att.user.fatherName || '',
+        att.user.motherName || '',
+        att.user.contactNumber || '',
       ])
     ];
-    const ws = xlsx.utils.aoa_to_sheet(data);
+
+    const ws = xlsx.utils.aoa_to_sheet(sheetData);
     const wb = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(wb, ws, 'Rankings');
+    xlsx.utils.book_append_sheet(wb, ws, 'Ranking');
     const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
-    res.setHeader('Content-Disposition', `attachment; filename="test-rankings-${testId}.xlsx"`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.send(buf);
+
+    const fileName = `test-ranking-${stream}-${sessionYear}.xlsx`;
+    res.statusCode = 200;
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'application/vnd.ms-excel');
+    res.end(buf);
   } catch (error) {
     next(error);
   }
@@ -476,7 +522,9 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
 export const createOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const mUser = await User.findOne({ uid: req.user?.uid }).lean();
+    const {phone} = req.body;
     if (!mUser) throw new AuthenticationError();
+    if (!mUser.contactNumber) mUser.contactNumber = phone;
     if (!mUser.contactNumber) throw new ConflictError('User does not have a phone number');
     let orderPayload = {
       order_id: `order_${uuid()}`,
@@ -570,7 +618,6 @@ export const PaymentHook = async (req: Request, res: Response) => {
         paymentId: successfulPayment.cf_payment_id,
         orderId: webhookData.data.order.order_id
       }),
-      Test.findByIdAndUpdate(testId, { $inc: { registration: 1 } }),
     ]);
     res.status(200).send('Webhook received');
   } catch (err) {

@@ -5,6 +5,7 @@ import { auth } from '../config/firebase.config';
 export type IUser = Document & {
   uid: string;
   name?: string;
+  stream: 'PCM' | 'PCB' | 'PCMB' | 'Commerce' | 'Arts' | 'Others';
   photoUrl?: string;
   role: UserRole;
   contactNumber?: string;
@@ -20,6 +21,7 @@ export const mongooseUserSchema = new Schema<IUser>(
     name: { type: String, trim: false },
     photoUrl: { type: String },
     role: { type: String, enum: UserRoles, required: true },
+    stream: { type: String, enum: ['PCM', 'PCB', 'PCMB', 'Commerce', 'Arts', 'Others'], required: true },
     contactNumber: {
       type: String,
       validate: {

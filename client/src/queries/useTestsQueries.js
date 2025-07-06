@@ -6,7 +6,6 @@ import { useNotification } from '../contexts/NotificationContext';
 export const testKeys = {
   all: ['tests'],
   lists: () => [...testKeys.all, 'list'],
-  list: (filters) => [...testKeys.lists(), filters],
   details: () => [...testKeys.all, 'detail'],
   detail: (id) => [...testKeys.details(), id],
   rankings: (id) => [...testKeys.detail(id), 'rankings'],
@@ -14,11 +13,10 @@ export const testKeys = {
   payment: (orderId) => ['payment', orderId],
 };
 
-export const useTests = (filters = {}, options = {}) => {
+export const useTests = () => {
   return useQuery({
-    queryKey: testKeys.list(filters),
-    queryFn: () => testApi.getTests(filters),
-    ...options,
+    queryKey: testKeys.lists(),
+    queryFn: () => testApi.getTests(),
   });
 };
 

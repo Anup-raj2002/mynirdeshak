@@ -1,9 +1,14 @@
-import React from "react";
-import { Edit, Trash2, CalendarClock } from "lucide-react";
+import React, { useState } from "react";
+import { Edit, Trash2, CalendarClock, Download } from "lucide-react";
 import PublishTestButton from "./PublishTestButton";
 import { SECTION_ORDER } from "../../utils/sectionConfig";
+import { useTestRankings } from "../../queries/useTestsQueries";
+import { useUser } from "../../contexts/UserContext";
 
 const TestCard = ({ test, onSelect, onDelete }) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { profile: user } = useUser();
+  
   const sectionMap = {};
   (test.sections || []).forEach((sec) => {
     sectionMap[sec.name] = sec;
@@ -22,6 +27,41 @@ const TestCard = ({ test, onSelect, onDelete }) => {
       minute: "2-digit",
       hour12: true,
     });
+  };
+
+  // Check if test has ended (start time + 120 minutes)
+  const testEndTime = new Date(test.startDateTime);
+  testEndTime.setMinutes(testEndTime.getMinutes() + 120);
+  const hasTestEnded = new Date() > testEndTime;
+
+  const { refetch: downloadRankings } = useTestRankings(test.id, {
+    enabled: false,
+  });
+
+  const handleDownloadRankings = async (e) => {
+    e.stopPropagation();
+    setIsDownloading(true);
+    
+    try {
+      const response = await downloadRankings();
+      if (response.data) {
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `test-rankings-${test.id}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Error downloading rankings:', error);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -44,6 +84,16 @@ const TestCard = ({ test, onSelect, onDelete }) => {
           <div className="font-semibold text-blue-700 tracking-wider">{sectionDisplay}</div>
         </div>
         <div className="flex items-center gap-2 mt-2 sm:mt-0">
+          {hasTestEnded && user?.role !== 'instructor' && (
+            <button
+              onClick={handleDownloadRankings}
+              disabled={isDownloading}
+              className="flex items-center gap-2 px-3 py-1 text-sm font-semibold border rounded-lg transition-colors duration-200 bg-green-100 text-green-700 hover:bg-green-200 border-green-200 disabled:opacity-50"
+            >
+              <Download size={16} />
+              {isDownloading ? 'Downloading...' : 'Download Rankings'}
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();

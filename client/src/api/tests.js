@@ -21,8 +21,8 @@ export const deleteTest = async (testId) => {
   return response.data;
 };
 
-export const getTests = async (params = {}) => {
-  const response = await axiosInstance.get('/tests', { params });
+export const getTests = async () => {
+  const response = await axiosInstance.get('/tests');
   return response.data;
 };
 
@@ -54,8 +54,8 @@ export const getTestResult = async (testId) => {
 };
 
 
-export const createOrder = async () => {
-  const response = await axiosInstance.post(`/tests/order`);
+export const createOrder = async (phone) => {
+  const response = await axiosInstance.post(`/tests/order`, {phone});
   return response.data;
 };
 
