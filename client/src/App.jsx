@@ -23,7 +23,7 @@ import InstructorDashboard from './pages/dashboards/InstructorDashboard';
 import OrderSuccess from './pages/registration/OrderSuccess';
 import TermsAndConditions from './pages/Legal/TermsAndConditions';
 import RulesAndRegulations from './pages/Legal/RulesandRegulations';
-
+import Global from'./pages/public/Global';
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -62,6 +62,7 @@ function App() {
                 <Route path="/privacy" element={<ErrorPage message='create privacy policy'/>} />
                 <Route path="/refund" element={<ErrorPage message='create refund page' />} />
                 <Route path="/disclaimer" element={<ErrorPage message='create disclaimer' />} />
+                <Route path="/global" element={<Global />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

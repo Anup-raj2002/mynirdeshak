@@ -34,7 +34,7 @@ const About = () => {
             About My Nirdeshak
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Founded by Lav Kumar Sharma, My Nirdeshak is dedicated to
+            Founded by Love Kumar Sharma, My Nirdeshak is dedicated to
             empowering students with the financial support they need to pursue
             their educational dreams.
           </p>
@@ -48,11 +48,11 @@ const About = () => {
                 Meet Our Founder
               </h3>
               <span className="text-xl md:text-2xl font-semibold text-blue-700 mb-2">
-                Lav Kumar Sharma
+                Love Kumar Sharma
               </span>
               <p className="text-gray-700 text-base md:text-lg leading-relaxed mb-6">
                 With a passion for education and a vision to make quality higher
-                education accessible to all deserving students, Lav Kumar Sharma
+                education accessible to all deserving students, Love Kumar Sharma
                 established My Nirdeshak. His belief that financial constraints should
                 never be a barrier to academic excellence drives our mission forward.
               </p>
