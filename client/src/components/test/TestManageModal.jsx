@@ -6,7 +6,7 @@ import ErrorPage from "../ui/ErrorPage";
 import { SECTION_ORDER, getSectionMeta } from "../../utils/sectionConfig";
 
 const TestManageModal = ({ testId, open, onClose }) => {
-  const { data: test, isLoading, error } = useTestById(testId);
+  const { data: test, isLoading, error, refetch } = useTestById(testId);
   const { mutateAsync: updateTest } = useUpdateTest();
   const { mutateAsync: addQuestion } = useAddQuestionToTest();
   const { mutateAsync: deleteQuestion } = useDeleteQuestionFromTest();
@@ -33,12 +33,19 @@ const TestManageModal = ({ testId, open, onClose }) => {
     sectionMap[sec.name] = sec;
   });
 
-  // Handlers
+  const formatForDateTimeInput = (dateString) => {
+    const date = new Date(dateString);
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().slice(0, 16);
+  };
+  
+
   const handleEditTest = () => {
     setEditForm({
       stream: test.stream,
       description: test.description,
-      startDateTime: test.startDateTime?.slice(0, 16),
+      startDateTime: formatForDateTimeInput(test.startDateTime),
     });
     setMode("editTest");
   };
@@ -50,10 +57,12 @@ const TestManageModal = ({ testId, open, onClose }) => {
 
   const handleEditFormSubmit = async (e) => {
     e.preventDefault();
+    const isoStartDateTime = new Date(editForm.startDateTime).toISOString();
     await updateTest({ testId, updateData: {
       description: editForm.description,
-      startDateTime: editForm.startDateTime,
+      startDateTime: isoStartDateTime,
     }});
+    await refetch();
     setMode("addQuestion");
   };
 

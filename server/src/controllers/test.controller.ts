@@ -143,11 +143,11 @@ export const addQuestionToTest = async (req: AuthRequest, res: Response, next: N
     }
     const test = await Test.findById(testId);
     if (!test) throw new NotFoundError('Test not found');
-    const now = new Date();
-    const testStart = new Date(test.startDateTime);
-    if (now >= testStart && test.isPublished) {
-      throw new AuthorizationError('Cannot add questions after test start');
-    }
+    // const now = new Date();
+    // const testStart = new Date(test.startDateTime);
+    // if (now >= testStart && test.isPublished) {
+    //   throw new AuthorizationError('Cannot add questions after test start');
+    // }
     const sectionObj = test.sections.find(s => s.name === section);
     if (!sectionObj) {
       throw new BadRequestError('Section not found in test.');
@@ -383,11 +383,11 @@ export const updateTest = async (
     if (!test) {
       throw new NotFoundError('Test not found');
     }
-    const now = new Date();
-    const testStart = new Date(test.startDateTime);
-    if (now >= testStart && test.isPublished) {
-      throw new AuthorizationError('Cannot update after test start');
-    }
+    // const now = new Date();
+    // const testStart = new Date(test.startDateTime);
+    // if (now >= testStart && test.isPublished) {
+    //   throw new AuthorizationError('Cannot update after test start');
+    // } //TODO remove comment
     const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
     if(!mUser) throw new AuthenticationError();
     if (req.user?.role === 'instructor' && !test.instructorId.toString() === mUser.id) {

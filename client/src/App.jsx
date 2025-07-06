@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/ui/Header';
 import Footer from './components/ui/Footer';
 import Home from './pages/Home';
@@ -24,6 +24,8 @@ import OrderSuccess from './pages/registration/OrderSuccess';
 import TermsAndConditions from './pages/Legal/TermsAndConditions';
 import RulesAndRegulations from './pages/Legal/RulesandRegulations';
 import Global from'./pages/public/Global';
+import TestTakingPage from './pages/test/TestTakingPage';
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -33,14 +35,16 @@ function ScrollToTop() {
 }
 
 function App() {
+  const location = useLocation();
+  const isTestPage = location.pathname.startsWith('/test/');
+
   return (
-    <Router>
       <NotificationProvider>
         <UserProvider>
           <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-            <Header />
+            {!isTestPage && <Header />}
             <ScrollToTop />
-            <main className="pt-20">
+            <main className={isTestPage ? "" : "pt-20"}>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
@@ -62,15 +66,15 @@ function App() {
                 <Route path="/privacy" element={<ErrorPage message='create privacy policy'/>} />
                 <Route path="/refund" element={<ErrorPage message='create refund page' />} />
                 <Route path="/disclaimer" element={<ErrorPage message='create disclaimer' />} />
+                <Route path="/test/:testId" element={<TestTakingPage />} />
                 <Route path="/global" element={<Global />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
-            <Footer />
+            {!isTestPage && <Footer />}
           </div>
         </UserProvider>
       </NotificationProvider>
-    </Router>
   );
 }
 

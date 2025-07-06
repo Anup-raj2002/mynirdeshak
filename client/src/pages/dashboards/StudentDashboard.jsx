@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Settings, FileText, Menu, User as UserIcon, Clock } from 'lucide-react';
+import { BookOpen, Settings, FileText, Menu, User as UserIcon, Clock, X } from 'lucide-react';
 import AccountSettings from "../../components/user/AccountSettings";
 import ProfileSettings from "../../components/user/ProfileSettings";
 import { useUser } from '../../contexts/UserContext';
-import { useTests } from '../../queries/useTestsQueries';
+import { useTests, useTestResult } from '../../queries/useTestsQueries';
 import StudentTestCard from '../../components/test/StudentTestCard';
 import Loading from '../../components/ui/Loading';
 import ErrorPage from '../../components/ui/ErrorPage';
@@ -27,7 +27,7 @@ const ExamDetailsModal = ({ open, onClose, test }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8">
         <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-200 z-10">
-          <Clock size={24} />
+          <X size={24} />
         </button>
         <h2 className="text-2xl font-bold mb-2">{test.examName || test.name}</h2>
         <div className="mb-2 text-blue-700 font-semibold">{STREAM_LABELS[test.stream] || test.stream}</div>
@@ -78,11 +78,21 @@ const StudentDashboard = () => {
   } = useTests();
 
   const now = new Date();
+  // Upcoming: show until start+100min
   const filteredUpcomingTests = (Tests || []).filter(
-    (test) => new Date(test.startDateTime) > now
+    (test) => {
+      const start = new Date(test.startDateTime);
+      const end = new Date(start.getTime() + 100 * 60000);
+      return now < end;
+    }
   );
+  // Last: show after start+100min
   const filteredLastTests = (Tests || []).filter(
-    (test) => new Date(test.startDateTime) <= now
+    (test) => {
+      const start = new Date(test.startDateTime);
+      const end = new Date(start.getTime() + 100 * 60000);
+      return now >= end;
+    }
   );
 
   const sidebarItems = [
@@ -155,16 +165,24 @@ const StudentDashboard = () => {
             {!isLoading && !error && (
               filteredUpcomingTests && filteredUpcomingTests.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {filteredUpcomingTests.map((test) => {
-                    const canStart = new Date(test.startDateTime) <= now;
-                    return (
-                      <StudentTestCard
-                        key={test.id}
-                        test={{ ...test, canStart, streamLabel: STREAM_LABELS[test.stream] || test.stream }}
-                        onClick={() => { setSelectedTest({ ...test, canStart }); setModalOpen(true); }}
-                      />
-                    );
-                  })}
+                  {filteredUpcomingTests.map((test) => (
+                    <StudentTestCard
+                      key={test.id}
+                      test={test}
+                      onClick={() => {
+                        // Only navigate if exam can be started (button is visible)
+                        const start = new Date(test.startDateTime);
+                        const end = new Date(start.getTime() + 100 * 60000);
+                        const fiveMinBefore = new Date(start.getTime() - 5 * 60000);
+                        if (now >= fiveMinBefore && now <= end) {
+                          navigate(`/test/${test.id}`);
+                        } else {
+                          setSelectedTest(test);
+                          setModalOpen(true);
+                        }
+                      }}
+                    />
+                  ))}
                 </div>
               ) : (
                 <div className="text-gray-500">No upcoming exams found.</div>
@@ -179,14 +197,19 @@ const StudentDashboard = () => {
             {error && <ErrorPage message={error.message} />}
             {!isLoading && !error && (
               filteredLastTests && filteredLastTests.length > 0 ? (
-                <div className="space-y-4">
-                  {filteredLastTests.map((test) => (
-                    <StudentTestCard
-                      key={test.id}
-                      test={test}
-                      onClick={() => { setSelectedTest(test); setModalOpen(true); }}
-                    />
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {filteredLastTests.map((test) => {
+                    // Use a custom hook to fetch the result for each test
+                    const { data: result } = useTestResult(test.id);
+                    return (
+                      <StudentTestCard
+                        key={test.id}
+                        test={test}
+                        expectedScore={result?.expectedScore}
+                        onClick={() => { setSelectedTest(test); setModalOpen(true); }}
+                      />
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-gray-500">No past exams found.</div>

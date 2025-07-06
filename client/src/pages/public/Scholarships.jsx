@@ -19,11 +19,11 @@ const Scholarships = () => {
       rank: "2nd Rank",
       amount: "₹75,000",
       description: "Recognizing exceptional academic performance and dedication to excellence",
-      gradient: "from-gray-300 via-gray-400 to-gray-500",
-      bgGradient: "from-gray-50 to-slate-50",
-      iconBg: "from-gray-100 to-gray-200",
+      gradient: "from-slate-400 via-blue-500 to-blue-600",
+      bgGradient: "from-blue-100 to-blue-150",
+      iconBg: "from-slate-100 to-blue-200",
       position: "left",
-    },
+    },    
     {
       icon: Award,
       rank: "3rd Rank",
@@ -154,7 +154,7 @@ const Scholarships = () => {
                   <div
                     className={`bg-gradient-to-br ${topRanks[1].iconBg} p-3 md:p-4 rounded-xl md:rounded-2xl w-fit mx-auto mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-300`}
                   >
-                    <Medal className="h-8 w-8 md:h-12 md:w-12 text-gray-700" />
+                    <Medal className="h-8 w-8 md:h-12 md:w-12 text-blue-700" />
                   </div>
                   <h3 className="text-lg md:text-2xl font-bold text-gray-900 mb-2">{topRanks[1].rank}</h3>
                   <div

@@ -44,11 +44,12 @@ const CreateTest = () => {
       return;
     }
     try {
+      const isoStartDateTime = new Date(form.startDateTime).toISOString();
       const payload = {
         description: form.description,
         stream: form.stream,
         sessionId: form.sessionId,
-        startDateTime: form.startDateTime,
+        startDateTime: isoStartDateTime,
       };
       await createTest(payload);
       showNotification("Test created! You can now add questions.", "success");
