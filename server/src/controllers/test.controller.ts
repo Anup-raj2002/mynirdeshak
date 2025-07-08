@@ -143,11 +143,11 @@ export const addQuestionToTest = async (req: AuthRequest, res: Response, next: N
     }
     const test = await Test.findById(testId);
     if (!test) throw new NotFoundError('Test not found');
-    // const now = new Date();
-    // const testStart = new Date(test.startDateTime);
-    // if (now >= testStart && test.isPublished) {
-    //   throw new AuthorizationError('Cannot add questions after test start');
-    // }
+    const now = new Date();
+    const testStart = new Date(test.startDateTime);
+    if (now >= testStart && test.isPublished) {
+      throw new AuthorizationError('Cannot add questions after test start');
+    }
     const sectionObj = test.sections.find(s => s.name === section);
     if (!sectionObj) {
       throw new BadRequestError('Section not found in test.');
@@ -383,11 +383,11 @@ export const updateTest = async (
     if (!test) {
       throw new NotFoundError('Test not found');
     }
-    // const now = new Date();
-    // const testStart = new Date(test.startDateTime);
-    // if (now >= testStart && test.isPublished) {
-    //   throw new AuthorizationError('Cannot update after test start');
-    // } //TODO remove comment
+    const now = new Date();
+    const testStart = new Date(test.startDateTime);
+    if (now >= testStart && test.isPublished) {
+      throw new AuthorizationError('Cannot update after test start');
+    }
     const mUser = await User.findOne({uid:req.user?.uid}).select('_id').lean();
     if(!mUser) throw new AuthenticationError();
     if (req.user?.role === 'instructor' && !test.instructorId.toString() === mUser.id) {
@@ -491,7 +491,6 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
     const commonName = attempts[0]?.session?.commonName || 'Rankings';
 
     const sheetData = [
-      [commonName],
       ['UID', 'Rank', 'Name', 'Score', 'Father Name', 'Mother Name', 'Contact Number'],
       ...attempts.map(att => [
         att.user.uid || '',
@@ -506,13 +505,16 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
 
     const ws = xlsx.utils.aoa_to_sheet(sheetData);
     const wb = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(wb, ws, 'Ranking');
+    xlsx.utils.book_append_sheet(wb, ws, `${commonName}`);
     const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
     const fileName = `test-ranking-${stream}-${sessionYear}.xlsx`;
     res.statusCode = 200;
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    res.setHeader('Content-Type', 'application/vnd.ms-excel');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.end(buf);
   } catch (error) {
     next(error);

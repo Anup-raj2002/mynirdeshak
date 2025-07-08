@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as testApi from '../api/tests';
 import { useNotification } from '../contexts/NotificationContext';
-import axiosInstance from "../api/axiosInstance";
-
 
 export const testKeys = {
   all: ['tests'],
@@ -196,15 +194,3 @@ export const useCreateExamSession = () => {
     },
   });
 };
-
-export function useServerTime() {
-  return useQuery({
-    queryKey: ["serverTime"],
-    queryFn: async () => {
-      const { data } = await axiosInstance.get("/server-time");
-      return data.now; // should be a timestamp (ms)
-    },
-    refetchInterval: 30 * 1000, // update every 30s
-    staleTime: 30 * 1000,
-  });
-}

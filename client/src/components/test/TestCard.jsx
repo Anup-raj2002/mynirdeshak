@@ -41,28 +41,41 @@ const TestCard = ({ test, onSelect, onDelete }) => {
   const handleDownloadRankings = async (e) => {
     e.stopPropagation();
     setIsDownloading(true);
-    
     try {
-      const response = await downloadRankings();
+      const response = (await downloadRankings()).data;
+  
       if (response.data) {
+        let filename = `test-rankings-${test.id}.xlsx`;
+  
+        const disposition = response.headers['content-disposition'];
+        if (disposition) {
+          const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+          const matches = filenameRegex.exec(disposition);
+          if (matches !== null && matches[1]) {
+            filename = matches[1].replace(/['"]/g, '');
+          }
+        }
+  
         const blob = new Blob([response.data], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
+  
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `test-rankings-${test.id}.xlsx`;
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Error downloading rankings:', error);
+      console.error("got this during pdf", error)
     } finally {
       setIsDownloading(false);
     }
   };
+  
 
   return (
     <div className="bg-white rounded-xl shadow-md border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
