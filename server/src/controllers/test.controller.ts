@@ -20,6 +20,8 @@ import { ExamSession } from '../models/examSession.model';
 import { createQueue } from '../config/redis.config';
 import fs from 'fs';
 import path from 'path';
+import { sendMail } from '../services/mail.service';
+import { auth as firebaseAuth } from '../config/firebase.config';
 const rankingsQueue = createQueue('rankings');
 
 export const getTests = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -528,6 +530,7 @@ export const getTestRankings = async (req: AuthRequest, res: Response, next: Nex
 export const createOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const mUser = await User.findOne({ uid: req.user?.uid }).lean();
+    const firebaseUser = await firebaseAuth.getUser(req.user?.uid || '');
     const {phone} = req.body;
     if (!mUser) throw new AuthenticationError();
     if (!mUser.contactNumber) mUser.contactNumber = phone;
@@ -537,6 +540,7 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
       order_currency: 'INR',
       order_amount: config.price,
       customer_details: {
+        customer_email: firebaseUser.email,
         customer_id: mUser._id.toString(),
         customer_phone: mUser.contactNumber,
       },
@@ -578,6 +582,18 @@ export const orderComplete = async (req: AuthRequest, res: Response, next: NextF
         paymentId: successfulPayment.cf_payment_id,
         orderId: order_id,
       });
+      try {
+        const firebaseUser = await firebaseAuth.getUser(req.user?.uid || '');
+        if(firebaseUser.email){
+          await sendMail({
+            to: firebaseUser.email,
+            subject: 'Payment Successful - Mynirdeshak',
+            html: `<p>Dear Student,</p><br><p>Your registration fee of amount <b>₹${successfulPayment.payment_amount}</b> has been successfully processed for Mynirdeshak.</p><br><p>Thank you for participating!</p><br><p>Mynirdeshak Team</p>`,
+          });
+        }
+      } catch (mailErr) {
+        console.error('Failed to send payment success email:', mailErr);
+      }
       res.status(200).json({ message: 'Payment successful' });
       return;
     }
@@ -625,6 +641,15 @@ export const PaymentHook = async (req: Request, res: Response) => {
         orderId: webhookData.data.order.order_id
       }),
     ]);
+    try {
+        await sendMail({
+          to: webhookData.data.customer_details.customer_email,
+          subject: 'Payment Successful - Mynirdeshak',
+          html: `<p>Dear Student,</p><br><p>Your registration fee of amount <b>₹${successfulPayment.payment_amount}</b> has been successfully processed for Mynirdeshak.</p><br><p>Thank you for participating!</p><br><p>Mynirdeshak Team</p>`,
+        });
+    } catch (mailErr) {
+      console.error('Failed to send payment success email:', mailErr);
+    }
     res.status(200).send('Webhook received');
   } catch (err) {
     res.status(200).send('Error processing webhook');
@@ -652,6 +677,20 @@ export const grantStudent = async (req: AuthRequest, res: Response, next: NextFu
       throw new ConflictError('Grant already exists for this user');
     }
     const payment = await TestPayment.create({ userId: user._id, amount, method: 'GRANT' });
+
+    try {
+      const firebaseUser = await firebaseAuth.getUser(uid);
+      if (firebaseUser.email) {
+        await sendMail({
+          to: firebaseUser.email,
+          subject: 'Payment Successful - Mynirdeshak',
+          html: `<p>Dear Student,</p><br><p>Your grant of amount <b>₹${amount}</b> has been successfully processed for Mynirdeshak.</p><br><p>Thank you for participating!</p><br><p>Mynirdeshak Team</p>`,
+        });
+      }
+    } catch (mailErr) {
+      console.error('Failed to send payment success email:', mailErr);
+    }
+
     res.status(201).json({ success: true, payment });
   } catch (error) {
     next(error);
