@@ -17,6 +17,8 @@ import { UserRoles } from '../schemas/user.validator';
 import { questionValidationSchema } from '../schemas/question.validator';
 import xlsx from 'xlsx';
 import { ExamSession } from '../models/examSession.model';
+import { createQueue } from '../config/redis.config';
+const rankingsQueue = createQueue('rankings');
 
 export const getTests = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -677,6 +679,30 @@ export const createExamSession = async (req: AuthRequest, res: Response, next: N
     }
     const session = await ExamSession.create({ commonName, year });
     res.status(201).json(session);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadTestResult = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { testId } = req.params;
+    const { rows } = req.body;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      throw new BadRequestError('No rankings data provided');
+    }
+    const test = await Test.findByIdAndUpdate(testId, { resultUploaded: true }, { new: true }).populate('sessionId');
+    if (!test) throw new NotFoundError();
+    const { stream } = test;
+    const { year, commonName } = (test.sessionId as any) || {};
+    await rankingsQueue.add('upload', {
+      testId,
+      stream,
+      year,
+      commonName,
+      rows,
+    });
+    res.status(200).json({ message: 'Rankings uploaded and enqueued for processing' });
   } catch (error) {
     next(error);
   }

@@ -4,13 +4,14 @@ export interface ITest extends Document {
   instructorId: Types.ObjectId;
   description: string;
   isPublished: boolean;
-  sessionId: Types.ObjectId; // ref to ExamSession
+  sessionId: Types.ObjectId;
   stream: 'PCM' | 'PCB' | 'PCMB' | 'Commerce' | 'Arts' | 'Others';
   sections: {
     name: "A" | "B" | "C" | "D";
     questions: Types.ObjectId[];
   }[];
   startDateTime: Date;
+  resultUploaded?: boolean;
 }
 
 export const testSchema = new Schema<ITest>({
@@ -28,6 +29,7 @@ export const testSchema = new Schema<ITest>({
     questions: [{ type: Schema.Types.ObjectId, ref: 'Question' }],
   }],
   startDateTime: { type: Date, required: true },
+  resultUploaded: { type: Boolean, default: false },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

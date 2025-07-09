@@ -18,6 +18,7 @@ import {
   grantStudent,
   getExamSessions,
   createExamSession,
+  uploadTestResult,
 } from '../controllers/test.controller';
 
 const testRouter = Router();
@@ -46,5 +47,6 @@ testRouter.delete('/:testId', deleteTest);
 testRouter.post('/:testId/questions', addQuestionToTest);
 testRouter.delete('/:testId/questions/:questionId', deleteQuestionFromTest);
 testRouter.get('/:testId/rankings', getTestRankings);
+testRouter.post('/:testId/result', uploadTestResult);
 
 export default testRouter; 

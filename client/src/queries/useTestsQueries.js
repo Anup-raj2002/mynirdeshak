@@ -194,3 +194,20 @@ export const useCreateExamSession = () => {
     },
   });
 };
+
+export const useUploadTestResult = () => {
+  const queryClient = useQueryClient();
+  const { showNotification } = useNotification();
+  return useMutation({
+    mutationFn: ({ testId, rows }) => testApi.uploadTestResult(testId, rows),
+    onSuccess: (data, { testId }) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.rankings(testId) });
+      queryClient.invalidateQueries({ queryKey: testKeys.results(testId) });
+      showNotification('Rankings uploaded successfully!', 'success');
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to upload rankings.';
+      showNotification(errorMessage, 'error');
+    },
+  });
+};

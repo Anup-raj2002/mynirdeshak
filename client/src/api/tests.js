@@ -53,6 +53,10 @@ export const getTestResult = async (testId) => {
   return response.data;
 };
 
+export const uploadTestResult = async (testId, rows) => {
+  const response = await axiosInstance.post(`/tests/${testId}/result`, { rows });
+  return response.data;
+};
 
 export const createOrder = async (phone) => {
   const response = await axiosInstance.post(`/tests/order`, {phone});
