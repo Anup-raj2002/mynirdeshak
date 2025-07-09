@@ -19,6 +19,7 @@ import {
   getExamSessions,
   createExamSession,
   uploadTestResult,
+  getScoreCardFile,
 } from '../controllers/test.controller';
 
 const testRouter = Router();
@@ -35,6 +36,7 @@ testRouter.get('/order', authorize(['student']), orderComplete);
 testRouter.post('/:testId/attempt/start', authorize(['student']), startTestAttempt);
 testRouter.post('/:testId/attempt/submit', authorize(['student']), submitTestAttempt);
 testRouter.get('/:testId/result', authorize(['student']), getTestResult);
+testRouter.get('/:testId/result/scorecard', authorize(['student']), getScoreCardFile);
 
 testRouter.post('/', authorize(['instructor']), createTest);
 testRouter.post('/grant', authorize(['admin', 'test-manager']), grantStudent);

@@ -86,4 +86,9 @@ export const getExamSessions = async () => {
 export const createExamSession = async (sessionData) => {
   const response = await axiosInstance.post('/tests/sessions', sessionData);
   return response.data;
+};
+
+export const downloadScoreCard = async (testId) => {
+  const response = await axiosInstance.get(`/tests/${testId}/result/scorecard`, { responseType: 'blob' });
+  return response;
 }; 

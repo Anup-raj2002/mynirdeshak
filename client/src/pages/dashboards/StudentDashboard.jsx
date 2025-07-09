@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BookOpen, Settings, FileText, Menu, User as UserIcon, Clock, X } from 'lucide-react';
 import AccountSettings from "../../components/user/AccountSettings";
 import ProfileSettings from "../../components/user/ProfileSettings";
 import { useUser } from '../../contexts/UserContext';
-import { useTests, useTestResult } from '../../queries/useTestsQueries';
+import { useTestResults, useTests } from '../../queries/useTestsQueries';
 import StudentTestCard from '../../components/test/StudentTestCard';
 import Loading from '../../components/ui/Loading';
 import ErrorPage from '../../components/ui/ErrorPage';
@@ -54,6 +54,11 @@ const ExamDetailsModal = ({ open, onClose, test }) => {
   );
 };
 
+const formatExpectedScore = (score) => {
+  if (typeof score !== 'number' || isNaN(score)) return undefined;
+  return Math.round(score * 100) / 100;
+};
+
 const StudentDashboard = () => {
   const [activeSection, setActiveSection] = useState('upcoming-exams');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -77,23 +82,34 @@ const StudentDashboard = () => {
     error,
   } = useTests();
 
+  // Memoize test ids for last exams
   const now = new Date();
-  // Upcoming: show until start+100min
-  const filteredUpcomingTests = (Tests || []).filter(
+  const filteredUpcomingTests = useMemo(() => (Tests || []).filter(
     (test) => {
       const start = new Date(test.startDateTime);
       const end = new Date(start.getTime() + 100 * 60000);
       return now < end;
     }
-  );
-  // Last: show after start+100min
-  const filteredLastTests = (Tests || []).filter(
+  ), [Tests, now]);
+  const filteredLastTests = useMemo(() => (Tests || []).filter(
     (test) => {
       const start = new Date(test.startDateTime);
       const end = new Date(start.getTime() + 100 * 60000);
       return now >= end;
     }
-  );
+  ), [Tests, now]);
+
+  const lastTestIds = useMemo(() => filteredLastTests.map(test => test.id), [filteredLastTests]);
+
+  const testResultsQueries = useTestResults(lastTestIds);
+  
+  const testResults = useMemo(() => {
+    const results = {};
+    testResultsQueries.forEach((query, index) => {
+      results[lastTestIds[index]] = query.data;
+    });
+    return results;
+  }, [testResultsQueries, lastTestIds]);
 
   const sidebarItems = [
     { label: 'Upcoming Exams', icon: FileText, key: 'upcoming-exams' },
@@ -198,18 +214,18 @@ const StudentDashboard = () => {
             {!isLoading && !error && (
               filteredLastTests && filteredLastTests.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {filteredLastTests.map((test) => {
-                    // Use a custom hook to fetch the result for each test
-                    const { data: result } = useTestResult(test.id);
-                    return (
-                      <StudentTestCard
-                        key={test.id}
-                        test={test}
-                        expectedScore={result?.expectedScore}
-                        onClick={() => { setSelectedTest(test); setModalOpen(true); }}
-                      />
-                    );
-                  })}
+                  {filteredLastTests.map((test) => (
+                    <StudentTestCard
+                      key={test.id}
+                      test={test}
+                      expectedScore={
+                        testResults[test.id]?.expectedScore !== undefined
+                          ? formatExpectedScore(testResults[test.id]?.expectedScore)
+                          : undefined
+                      }
+                      onClick={() => { setSelectedTest(test); setModalOpen(true); }}
+                    />
+                  ))}
                 </div>
               ) : (
                 <div className="text-gray-500">No past exams found.</div>

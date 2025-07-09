@@ -4,7 +4,7 @@ import PublishTestButton from "./PublishTestButton";
 import { SECTION_ORDER } from "../../utils/sectionConfig";
 import { useTestRankings } from "../../queries/useTestsQueries";
 import { useUser } from "../../contexts/UserContext";
-import xlsx from 'xlsx';
+import * as xlsx from 'xlsx';
 import { useUploadTestResult } from '../../queries/useTestsQueries';
 
 const REQUIRED_COLUMNS = ['UID', 'Rank', 'Name', 'Score', 'Father Name', 'Mother Name'];

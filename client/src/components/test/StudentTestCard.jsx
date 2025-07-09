@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Download } from "lucide-react";
+import { useDownloadScoreCard } from '../../queries/useTestsQueries';
 
 function formatDateIST(dateString) {
   return new Date(dateString).toLocaleString("en-IN", {
@@ -16,6 +17,7 @@ function formatDateIST(dateString) {
 const StudentTestCard = ({ test, onClick, expectedScore }) => {
   const [countdown, setCountdown] = useState("");
   const [canStart, setCanStart] = useState(false);
+  const downloadScoreCard = useDownloadScoreCard();
 
   useEffect(() => {
     if (!test.startDateTime) return;
@@ -49,6 +51,26 @@ const StudentTestCard = ({ test, onClick, expectedScore }) => {
     ? test.description.slice(0, 77) + "..."
     : test.description;
 
+  const handleDownloadScoreCard = async (e) => {
+    e.stopPropagation();
+    try {
+      const response = await downloadScoreCard.mutateAsync(test.id);
+      if (response && response.data) {
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `scorecard-${test.id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      // Notification handled in hook
+    }
+  };
+
   return (
     <div
       className="bg-white rounded-lg shadow border p-4 flex flex-col gap-2 hover:shadow-lg transition min-w-[320px] max-w-xl mx-auto"
@@ -72,7 +94,7 @@ const StudentTestCard = ({ test, onClick, expectedScore }) => {
       {shortDescription && (
         <div className="text-xs text-gray-600 mt-1 line-clamp-2">{shortDescription}</div>
       )}
-      {typeof expectedScore === 'number' && (
+      {typeof expectedScore === 'number' && !test.resultUploaded && (
         <div className="text-sm font-semibold text-green-700 mt-1">Expected Score: {expectedScore}</div>
       )}
       {canStart && (
@@ -81,6 +103,16 @@ const StudentTestCard = ({ test, onClick, expectedScore }) => {
           className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
         >
           Start Exam
+        </button>
+      )}
+      {test.resultUploaded && (
+        <button
+          onClick={handleDownloadScoreCard}
+          className="mt-2 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+          disabled={downloadScoreCard.isLoading}
+        >
+          <Download size={18} />
+          {downloadScoreCard.isLoading ? 'Downloading...' : 'Download Scorecard'}
         </button>
       )}
     </div>

@@ -18,6 +18,8 @@ import { questionValidationSchema } from '../schemas/question.validator';
 import xlsx from 'xlsx';
 import { ExamSession } from '../models/examSession.model';
 import { createQueue } from '../config/redis.config';
+import fs from 'fs';
+import path from 'path';
 const rankingsQueue = createQueue('rankings');
 
 export const getTests = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -703,6 +705,26 @@ export const uploadTestResult = async (req: AuthRequest, res: Response, next: Ne
       rows,
     });
     res.status(200).json({ message: 'Rankings uploaded and enqueued for processing' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getScoreCardFile = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { testId } = req.params;
+    const test = await Test.findById(testId).populate('sessionId').lean();
+    if (!test) throw new NotFoundError('Test not found');
+    const year = (test as any).sessionId?.year || 'unknown';
+    const stream = test.stream;
+    const scorecardPath = path.join(config.storagePath, 'scoreCards', String(year), String(stream), `${req.user?.uid}.pdf`);
+    console.log(`searching at ${scorecardPath}`);
+    if (!fs.existsSync(scorecardPath)) {
+      return next(new NotFoundError('Scorecard not found'));
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="scorecard.pdf"`);
+    fs.createReadStream(scorecardPath).pipe(res);
   } catch (error) {
     next(error);
   }
