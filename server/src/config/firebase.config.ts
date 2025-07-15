@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { User } from '../models/user.model';
+import { config } from './variables.config';
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
@@ -29,23 +30,18 @@ export const getUserRole = async (uid: string) => {
 
 const createAdminUser = async () => {
   try {
-    // Create the user
     const userRecord = await auth.createUser({
-      email: 'admin@test.com',
-      password: 'password',
+      email: config.userName,
+      password: config.pass,
       emailVerified: true,
     });
 
-    // Set custom user claims
     await auth.setCustomUserClaims(userRecord.uid, { role: 'admin' });
     await User.create({
       uid: userRecord.uid,
-      name: 'admin',
+      name: 'Super Admin',
       role: 'admin',
-      contactNumber: '7899874565',
     });
-
-    console.log(`Admin user created with UID: ${userRecord.uid}`);
   } catch (error: any) {
     if (error.code === 'auth/email-already-exists') {
       const existingUser = await auth.getUserByEmail('admin@test.com');

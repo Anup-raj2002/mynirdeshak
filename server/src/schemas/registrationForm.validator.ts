@@ -4,6 +4,7 @@ import { z } from 'zod';
 const phoneRegex = /^[6-9]\d{9}$/;
 const pinCodeRegex = /^[1-9][0-9]{5}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const base64ImageRegex = /^data:image\/(png|jpeg);base64,/;
 
 export const registrationFormValidationSchema = z.object({
   // Step 1: Personal Details
@@ -42,12 +43,22 @@ export const registrationFormValidationSchema = z.object({
   pinCode: z.string().regex(pinCodeRegex, 'Enter a valid 6-digit pin code (not starting with 0)'),
 
   // Step 5: Uploads (base64 strings)
-  passportPhoto: z.string().min(1, 'Passport photo is required'),
-  signaturePhoto: z.string().min(1, 'Signature photo is required'),
-  idProofPhoto: z.string().min(1, 'ID proof photo is required'),
-  schoolIdPhoto: z.string().min(1, 'School ID photo is required'),
-  marksheet10Photo: z.string().min(1, '10th marksheet photo is required'),
-  marksheet12Photo: z.string().optional().or(z.literal('')),
+  passportPhoto: z.string()
+  .regex(base64ImageRegex, 'Must be a base64-encoded PNG or JPEG image'),
+  signaturePhoto: z.string()
+  .regex(base64ImageRegex, 'Must be a base64-encoded PNG or JPEG image'),
+  idProofPhoto: z.string()
+  .regex(base64ImageRegex, 'Must be a base64-encoded PNG or JPEG image'),
+  schoolIdPhoto: z.string()
+  .regex(base64ImageRegex, 'Must be a base64-encoded PNG or JPEG image'),
+  marksheet10Photo: z.string()
+  .regex(base64ImageRegex, 'Must be a base64-encoded PNG or JPEG image'),
+  marksheet12Photo: z
+  .string()
+  .or(z.literal(''))
+  .or(z.null())
+  .optional(),
+
 
   // Step 6: Other Info
   howDidYouHear: z.string().min(1, 'This field is required'),

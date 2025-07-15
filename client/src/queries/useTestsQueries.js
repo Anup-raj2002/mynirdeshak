@@ -1,12 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useQueries } from '@tanstack/react-query';
 import * as testApi from '../api/tests';
 import { useNotification } from '../contexts/NotificationContext';
-
 
 export const testKeys = {
   all: ['tests'],
   lists: () => [...testKeys.all, 'list'],
-  list: (filters) => [...testKeys.lists(), filters],
   details: () => [...testKeys.all, 'detail'],
   detail: (id) => [...testKeys.details(), id],
   rankings: (id) => [...testKeys.detail(id), 'rankings'],
@@ -14,11 +12,10 @@ export const testKeys = {
   payment: (orderId) => ['payment', orderId],
 };
 
-export const useTests = (filters = {}, options = {}) => {
+export const useTests = () => {
   return useQuery({
-    queryKey: testKeys.list(filters),
-    queryFn: () => testApi.getTests(filters),
-    ...options,
+    queryKey: testKeys.lists(),
+    queryFn: () => testApi.getTests(),
   });
 };
 
@@ -142,12 +139,13 @@ export const useSubmitTestAttempt = () => {
   });
 };
 
-export const useTestResult = (testId, options = {}) => {
-  return useQuery({
-    queryKey: testKeys.results(testId),
-    queryFn: () => testApi.getTestResult(testId),
-    enabled: !!testId,
-    ...options,
+export const useTestResults = (testIds) => {
+  return useQueries({
+    queries: testIds.map((testId) => ({
+      queryKey: ['testResult', testId],
+      queryFn: () => getTestResult(testId),
+      enabled: !!testId,
+    }))
   });
 };
 
@@ -194,6 +192,35 @@ export const useCreateExamSession = () => {
     onError: (error) => {
       const errorMessage = error.response?.data?.message || error.message || 'Failed to create session.';
       showNotification(errorMessage, 'error');
+    },
+  });
+};
+
+export const useUploadTestResult = () => {
+  const queryClient = useQueryClient();
+  const { showNotification } = useNotification();
+  return useMutation({
+    mutationFn: ({ testId, rows }) => testApi.uploadTestResult(testId, rows),
+    onSuccess: (data, { testId }) => {
+      queryClient.invalidateQueries({ queryKey: testKeys.rankings(testId) });
+      queryClient.invalidateQueries({ queryKey: testKeys.results(testId) });
+      queryClient.invalidateQueries({ queryKey: testKeys.detail(testId) });
+      queryClient.invalidateQueries({ queryKey: testKeys.lists()});
+      showNotification('Rankings uploaded successfully!', 'success');
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to upload rankings.';
+      showNotification(errorMessage, 'error');
+    },
+  });
+};
+
+export const useDownloadScoreCard = () => {
+  const { showNotification } = useNotification();
+  return useMutation({
+    mutationFn: (testId) => testApi.downloadScoreCard(testId),
+    onError: (error) => {
+      showNotification('No scorecard available for download.', 'error');
     },
   });
 };

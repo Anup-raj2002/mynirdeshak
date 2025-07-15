@@ -7,13 +7,14 @@ import Loading from "../../components/ui/Loading";
 import ErrorPage from "../../components/ui/ErrorPage";
 import { motion } from "framer-motion";
 import { useNotification } from "../../contexts/NotificationContext";
+import { useUser } from "../../contexts/UserContext";
+import { LOCAL_STORAGE_KEY, LOCAL_STORAGE_STEP_KEY } from "./Registration";
 
-const REGISTRATION_DATA_KEY = "registrationFormData";
-const REGISTRATION_STEP_KEY = "registrationFormStep";
 const REGISTRATION_SUBMITTED_KEY = "registrationSubmittedOrderId";
 
 const OrderSuccess = () => {
   const [searchParams] = useSearchParams();
+  const { profile: user, loading: userLoading, error: userError } = useUser();
   const orderId = searchParams.get("order_id");
   const submitRegistration = useSubmitRegistration();
   const [hasSubmitted, setHasSubmitted] = React.useState(false);
@@ -26,26 +27,20 @@ const OrderSuccess = () => {
   } = useCheckPaymentStatus(orderId);
 
   React.useEffect(() => {
-    if (!orderId) return;
+    if (!orderId || !user) return;
     const alreadySubmittedOrderId = localStorage.getItem(REGISTRATION_SUBMITTED_KEY);
     if (alreadySubmittedOrderId === orderId) {
-      showNotification("You have already submitted this registration.", "info");
+      showNotification("You have already registered.", "info");
       setHasSubmitted(true);
       return;
     }
-    const regData = localStorage.getItem(REGISTRATION_DATA_KEY);
-    if (!regData) return;
-    let parsed;
-    try {
-      parsed = JSON.parse(regData);
-    } catch {
-      return;
-    }
-    submitRegistration.mutate(parsed,
+    const regData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!regData) showNotification("Registration data not found", 'error');
+    submitRegistration.mutate(JSON.parse(regData),
       {
         onSuccess: () => {
-          localStorage.removeItem(REGISTRATION_DATA_KEY);
-          localStorage.removeItem(REGISTRATION_STEP_KEY);
+          localStorage.removeItem(LOCAL_STORAGE_KEY);
+          localStorage.removeItem(LOCAL_STORAGE_STEP_KEY);
           localStorage.setItem(REGISTRATION_SUBMITTED_KEY, orderId);
           setHasSubmitted(true);
           showNotification("Registration submitted successfully!", "success");
@@ -57,12 +52,24 @@ const OrderSuccess = () => {
         },
       }
     );
-  }, [orderId]);
+  }, [orderId, hasSubmitted, user]);
 
   if (!orderId) {
     return (
       <ErrorPage
         message="Missing order Id. Please contact support."
+        icon={<XCircle className="text-red-500 w-16 h-16 mx-auto mb-4" />}
+      />
+    );
+  }
+  if (userLoading) {
+    return <Loading message="Loading your profile..." />;
+  }
+
+  if (userError) {
+    return (
+      <ErrorPage
+        message={userError}
         icon={<XCircle className="text-red-500 w-16 h-16 mx-auto mb-4" />}
       />
     );
@@ -94,7 +101,6 @@ const OrderSuccess = () => {
     );
   }
 
-  if (hasSubmitted || localStorage.getItem(REGISTRATION_SUBMITTED_KEY) === orderId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
         <motion.div
@@ -133,7 +139,6 @@ const OrderSuccess = () => {
         </motion.div>
       </div>
     );
-  }
 }
 
 export default OrderSuccess; 

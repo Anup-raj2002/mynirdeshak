@@ -21,8 +21,8 @@ export const deleteTest = async (testId) => {
   return response.data;
 };
 
-export const getTests = async (params = {}) => {
-  const response = await axiosInstance.get('/tests', { params });
+export const getTests = async () => {
+  const response = await axiosInstance.get('/tests');
   return response.data;
 };
 
@@ -53,9 +53,13 @@ export const getTestResult = async (testId) => {
   return response.data;
 };
 
+export const uploadTestResult = async (testId, rows) => {
+  const response = await axiosInstance.post(`/tests/${testId}/result`, { rows });
+  return response.data;
+};
 
-export const createOrder = async () => {
-  const response = await axiosInstance.post(`/tests/order`);
+export const createOrder = async (phone) => {
+  const response = await axiosInstance.post(`/tests/order`, {phone});
   return response.data;
 };
 
@@ -82,4 +86,9 @@ export const getExamSessions = async () => {
 export const createExamSession = async (sessionData) => {
   const response = await axiosInstance.post('/tests/sessions', sessionData);
   return response.data;
+};
+
+export const downloadScoreCard = async (testId) => {
+  const response = await axiosInstance.get(`/tests/${testId}/result/scorecard`, { responseType: 'blob' });
+  return response;
 }; 

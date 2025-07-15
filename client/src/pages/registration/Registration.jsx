@@ -12,8 +12,8 @@ import {
   User, GraduationCap, FileText, MapPin, Image as ImageIcon, Info, ShieldCheck
 } from 'lucide-react';
 
-const LOCAL_STORAGE_KEY = 'registrationFormDataV2';
-const LOCAL_STORAGE_STEP_KEY = 'registrationCurrentStepV2';
+export const LOCAL_STORAGE_KEY = 'registrationFormDataV2';
+export const LOCAL_STORAGE_STEP_KEY = 'registrationCurrentStepV2';
 
 const initialFormData = {
   // Step 1: Personal Details
@@ -114,7 +114,6 @@ const Registration = () => {
     setHasLoaded(true);
   }, []);
 
-  // Save to localStorage on every change, but only after initial load
   useEffect(() => {
     if (hasLoaded) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formData));

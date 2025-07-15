@@ -24,6 +24,9 @@ const ConfigSchema = z.object({
   CONTACT_SCRIPT_URL: z.string().url(),
   REGISTRATION_SCRIPT_URL: z.string().url(),
   SCRIPT_VERIFICATION_CODE: z.string(),
+  REDIS_HOST: z.string().default('localhost'),
+  REDIS_PORT: z.coerce.number().int().default(6379),
+  REDIS_PWD: z.string().optional(),
 });
 
 const parsedConfig = ConfigSchema.safeParse(process.env);
@@ -52,4 +55,7 @@ export const config = {
   contactScriptUrl: parsedConfig.data.CONTACT_SCRIPT_URL,
   registrationScriptUrl: parsedConfig.data.REGISTRATION_SCRIPT_URL,
   scriptVerificationCode: parsedConfig.data.SCRIPT_VERIFICATION_CODE,
+  redisHost: parsedConfig.data.REDIS_HOST,
+  redisPort: parsedConfig.data.REDIS_PORT,
+  redisPwd: parsedConfig.data.REDIS_PWD,
 } as const;

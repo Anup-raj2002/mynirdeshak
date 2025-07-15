@@ -1,9 +1,20 @@
-import React from "react";
-import { Edit, Trash2, CalendarClock } from "lucide-react";
+import React, { useState } from "react";
+import { Edit, Trash2, CalendarClock, Download } from "lucide-react";
 import PublishTestButton from "./PublishTestButton";
 import { SECTION_ORDER } from "../../utils/sectionConfig";
+import { useTestRankings } from "../../queries/useTestsQueries";
+import { useUser } from "../../contexts/UserContext";
+import * as xlsx from 'xlsx';
+import { useUploadTestResult } from '../../queries/useTestsQueries';
+
+const REQUIRED_COLUMNS = ['UID', 'Rank', 'Name', 'Score', 'Father Name', 'Mother Name'];
 
 const TestCard = ({ test, onSelect, onDelete }) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const { profile: user } = useUser();
+  const uploadMutation = useUploadTestResult();
+  
   const sectionMap = {};
   (test.sections || []).forEach((sec) => {
     sectionMap[sec.name] = sec;
@@ -23,6 +34,78 @@ const TestCard = ({ test, onSelect, onDelete }) => {
       hour12: true,
     });
   };
+
+  // Check if test has ended (start time + 120 minutes)
+  const testEndTime = new Date(test.startDateTime);
+  testEndTime.setMinutes(testEndTime.getMinutes() + 120);
+  const hasTestEnded = new Date() > testEndTime;
+
+  const { refetch: downloadRankings } = useTestRankings(test.id, {
+    enabled: false,
+  });
+
+  const handleDownloadRankings = async (e) => {
+    e.stopPropagation();
+    setIsDownloading(true);
+    try {
+      const response = (await downloadRankings()).data;
+  
+      if (response.data) {
+        let filename = `test-rankings-${test.id}.xlsx`;
+  
+        const disposition = response.headers['content-disposition'];
+        if (disposition) {
+          const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+          const matches = filenameRegex.exec(disposition);
+          if (matches !== null && matches[1]) {
+            filename = matches[1].replace(/['"]/g, '');
+          }
+        }
+  
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+  
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("got this during pdf", error)
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleUploadRankings = async (e) => {
+    e.stopPropagation();
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = xlsx.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = xlsx.utils.sheet_to_json(sheet, { defval: '' });
+      // Validate columns
+      const hasAllColumns = REQUIRED_COLUMNS.every(col => Object.keys(rows[0] || {}).includes(col));
+      if (!hasAllColumns) {
+        throw new Error('Missing required columns in uploaded file.');
+      }
+      await uploadMutation.mutateAsync({ testId: test.id, rows });
+    } catch (err) {
+      alert(err.message || 'Failed to upload rankings.');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+  
 
   return (
     <div className="bg-white rounded-xl shadow-md border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
@@ -44,6 +127,28 @@ const TestCard = ({ test, onSelect, onDelete }) => {
           <div className="font-semibold text-blue-700 tracking-wider">{sectionDisplay}</div>
         </div>
         <div className="flex items-center gap-2 mt-2 sm:mt-0">
+          {hasTestEnded && !test.resultUploaded && user?.role !== 'instructor' && (
+            <button
+              onClick={handleDownloadRankings}
+              disabled={isDownloading}
+              className="flex items-center gap-2 px-3 py-1 text-sm font-semibold border rounded-lg transition-colors duration-200 bg-green-100 text-green-700 hover:bg-green-200 border-green-200 disabled:opacity-50"
+            >
+              <Download size={16} />
+              {isDownloading ? 'Downloading...' : 'Download Rankings'}
+            </button>
+          )}
+          {hasTestEnded && !test.resultUploaded && ['admin', 'test-manager', 'instructor'].includes(user?.role) && (
+            <label className="flex items-center gap-2 px-3 py-1 text-sm font-semibold border rounded-lg transition-colors duration-200 bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200 disabled:opacity-50 cursor-pointer">
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleUploadRankings}
+                disabled={isUploading}
+                style={{ display: 'none' }}
+              />
+              {isUploading ? 'Uploading...' : 'Upload Rankings'}
+            </label>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();

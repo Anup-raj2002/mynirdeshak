@@ -11,7 +11,7 @@ import { Settings, FileText, User as UserIcon, BookOpen, UsersIcon,UserPlusIcon 
 import GrantTest from "../../components/test/GrantTest";
 import SessionManager from '../../components/test/SessionManager';
 
-function CourseManagerDashboard() {
+function TestManagerDashboard() {
   const { profile: user, loading: userLoading, error: userError } = useUser();
   const [activeTab, setActiveTab] = useState("viewTests");
 
@@ -65,4 +65,4 @@ function CourseManagerDashboard() {
   );
 };
 
-export default CourseManagerDashboard;
+export default TestManagerDashboard;
