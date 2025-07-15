@@ -73,9 +73,10 @@ const Header = () => {
             <motion.div 
               whileHover={{ rotate: 360, scale: 1.1 }}
               transition={{ duration: 0.6 }}
-              className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-2.5 rounded-xl shadow-lg"
+              
             >
-              <GraduationCap className="h-8 w-8 text-white" />
+              <img src="../../assets/LOGO.jpg" alt="Logo" class="rounded-full h-14 w-14" />
+
             </motion.div>
             <div>
               <motion.h1 

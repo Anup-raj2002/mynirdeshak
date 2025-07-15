@@ -20,8 +20,8 @@ const Footer = () => {
     ],
     Legal: [
       { name: "Terms & Conditions", path: "/terms" },
-      { name: "Privacy Policy", path: "/privacy" },
-      { name: "Refund Policy", path: "/refund" },
+      { name: "Guidelines", path: "/guidelines" },
+      { name: "Refund Policy", path: "/refund-policy" },
       { name: "Disclaimer", path: "/disclaimer" },
     ],
   };
@@ -89,9 +89,10 @@ const Footer = () => {
                 {/* Logo and Title - Left Aligned */}
                 <div className="flex items-center space-x-3 mb-4 group/logo">
                   <div className="relative">
-                    <div className="bg-gradient-to-br from-blue-400 to-blue-600 p-2 rounded-xl transform transition-all duration-500 group-hover/logo:scale-110 group-hover/logo:shadow-lg group-hover/logo:shadow-blue-500/50">
-                      <GraduationCap className="h-7 w-7 text-white transform transition-transform duration-700 group-hover/logo:rotate-360" />
-                    </div>
+                    <div className="h-14 w-14 rounded-full overflow-hidden flex items-center justify-center">
+  <img src="../../assets/LOGO.jpg" alt="Logo" className="h-full w-full object-cover" />
+</div>
+
                     {/* Sparkle effect */}
                     <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-300 opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300 animate-pulse" />
                   </div>

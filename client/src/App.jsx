@@ -24,6 +24,8 @@ import OrderSuccess from './pages/registration/OrderSuccess';
 import TermsAndConditions from './pages/Legal/TermsAndConditions';
 import RulesAndRegulations from './pages/Legal/RulesandRegulations';
 import Global from'./pages/public/Global';
+import Guidelines from './pages/Legal/Guidelines';
+import RefundPolicy from './pages/Legal/RefundPolicy';
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -63,6 +65,10 @@ function App() {
                 <Route path="/refund" element={<ErrorPage message='create refund page' />} />
                 <Route path="/disclaimer" element={<ErrorPage message='create disclaimer' />} />
                 <Route path="/global" element={<Global />} />
+                <Route path="/guidelines" element={<Guidelines />} />
+                <Route path="/refund-policy" element={<RefundPolicy />} />
+                
+                {/* Catch-all route for 404 Not Found */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
