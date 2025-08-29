@@ -1,5 +1,5 @@
 import fs from 'fs';
-const { SitemapStream, streamToPromise } = require('sitemap');
+import { SitemapStream, streamToPromise } from 'sitemap';
 
 const BASE_URL = 'https://mynirdeshak.com'; 
 const routes = [
@@ -24,7 +24,7 @@ const routes = [
 
 async function generateSitemap() {
   const sitemap = new SitemapStream({ hostname: BASE_URL });
-  const writeStream = fs.createWriteStream('../public/sitemap.xml');
+  const writeStream = fs.createWriteStream('./public/sitemap.xml');
 
   sitemap.pipe(writeStream);
 

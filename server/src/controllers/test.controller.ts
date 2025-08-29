@@ -588,7 +588,7 @@ export const orderComplete = async (req: AuthRequest, res: Response, next: NextF
           await sendMail({
             to: firebaseUser.email,
             subject: 'Payment Successful - Mynirdeshak',
-            html: `<p>Dear Student,</p><br><p>Your registration fee of amount <b>₹${successfulPayment.payment_amount}</b> has been successfully processed for Mynirdeshak.</p><br><p>Thank you for participating!</p><br><p>Mynirdeshak Team</p>`,
+            message: `Dear Student,<br><br>Your registration fee of amount <b>₹${successfulPayment.payment_amount}</b> has been successfully processed for Mynirdeshak.<br><br>Best of luck for your exams!`,
           });
         }
       } catch (mailErr) {
@@ -645,7 +645,7 @@ export const PaymentHook = async (req: Request, res: Response) => {
         await sendMail({
           to: webhookData.data.customer_details.customer_email,
           subject: 'Payment Successful - Mynirdeshak',
-          html: `<p>Dear Student,</p><br><p>Your registration fee of amount <b>₹${successfulPayment.payment_amount}</b> has been successfully processed for Mynirdeshak.</p><br><p>Thank you for participating!</p><br><p>Mynirdeshak Team</p>`,
+          message: `Dear Student,<br><br>Your registration fee of amount <b>₹${successfulPayment.payment_amount}</b> has been successfully processed for Mynirdeshak.<br><br>Best of luck for your exams!`,
         });
     } catch (mailErr) {
       console.error('Failed to send payment success email:', mailErr);
@@ -684,7 +684,7 @@ export const grantStudent = async (req: AuthRequest, res: Response, next: NextFu
         await sendMail({
           to: firebaseUser.email,
           subject: 'Payment Successful - Mynirdeshak',
-          html: `<p>Dear Student,</p><br><p>Your grant of amount <b>₹${amount}</b> has been successfully processed for Mynirdeshak.</p><br><p>Thank you for participating!</p><br><p>Mynirdeshak Team</p>`,
+          message: `Dear Student,<br><br>Your grant of amount <b>₹${amount}</b> has been successfully processed for Mynirdeshak.<br><br>Best of luck for your exams!`,
         });
       }
     } catch (mailErr) {
