@@ -98,7 +98,7 @@ const Footer = () => {
                   </div>
                   <div className="relative">
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-200 via-white to-blue-200 bg-clip-text text-transparent bg-300% animate-gradient-x">
-                      My nirdeshak
+                      My Nirdeshak
                     </h1>
                     <p className="text-blue-300 text-sm font-medium transform transition-all duration-300 group-hover/logo:text-blue-200">Educational Excellence</p>
                   </div>
